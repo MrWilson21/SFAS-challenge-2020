@@ -16,8 +16,14 @@ public class ColorSwapper : MonoBehaviour
 
         foreach (Renderer r in GetComponentsInChildren<Renderer>())
         {
-            materials.Add(r.material);
-            originalColours.Add(r.material.color);
+            if(!r.Equals(GetComponent<Renderer>()))
+            {
+                foreach (Material m in r.materials)
+                {
+                    materials.Add(m);
+                    originalColours.Add(m.color);
+                }
+            }
         }
     }
 
@@ -26,6 +32,14 @@ public class ColorSwapper : MonoBehaviour
         for(int i = 0; i < materials.Count; i++)
         {
             materials[i].color = colour * mixRatio + originalColours[i] * (1 - mixRatio);
+        }
+    }
+
+    public void restoreColour()
+    {
+        for (int i = 0; i < materials.Count; i++)
+        {
+            materials[i].color = originalColours[i];
         }
     }
 }

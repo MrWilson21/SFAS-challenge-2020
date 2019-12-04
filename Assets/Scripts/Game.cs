@@ -17,11 +17,23 @@ public class Game : MonoBehaviour
 
     private readonly int NumberOfRaycastHits = 1;
 
+    [SerializeField] private List<EnvironmentTile> environmentTileSelection;
+    [SerializeField] private List<GameObject> turretSelection;
+
     //Current tile mouse is hovering over
     private EnvironmentTile currentTile;
-    [SerializeField] private GameObject turretPrefab;
-    private GameObject objectToPlace;
-    [SerializeField] private EnvironmentTile tilePrefab;
+
+    //Currently selected turret to add
+    private GameObject turretPrefab;
+    private GameObject objectToPlace; //Instance of turretPrefab
+
+    //New tile to replace old one with
+    private EnvironmentTile tilePrefab;
+
+    private bool isUsingPlaceTool = false;
+    private bool isUsingDestroyTool = false;
+
+    private bool tileIsHighlighted = false;
 
     void Start()
     {
@@ -30,51 +42,63 @@ public class Game : MonoBehaviour
         mCharacter = Instantiate(Character, transform); 
         ShowMenu(true);
 
-        objectToPlace = Instantiate(turretPrefab);
-        objectToPlace.AddComponent<ColorSwapper>();
-        objectToPlace.SetActive(false);
+        selectNewTile(0);
+        cancelTool();
     }
 
     private void Update()
-    {       
-        // Check to see if the player has clicked a tile and if they have, try to find a path to that 
-        // tile. If we find a path then the character will move along it to the clicked tile. 
-        if (Input.GetMouseButtonDown(0))
+    {
+        if (currentTile != null && currentTile.canBeDestroyed)
         {
-            if (getMouseTile())
-            {
-                List<EnvironmentTile> route = mMap.Solve(mCharacter.CurrentPosition, currentTile);
-                mCharacter.GoTo(route);
-            }
+            print(currentTile);
+            currentTile.GetComponent<ColorSwapper>().restoreColour();
         }
 
-        if (Input.GetMouseButtonDown(1))
+        tileIsHighlighted = getMouseTile();
+        objectToPlace.SetActive(false);
+
+        if (Input.GetKeyDown(KeyCode.C))
         {
-            if (getMouseTile())
+            cancelTool();
+        }
+
+        if(isUsingPlaceTool && tileIsHighlighted)
+        {
+            if(tileIsHighlighted)
             {
+                objectToPlace.SetActive(true);
+                objectToPlace.transform.position = currentTile.Position;
                 if (currentTile.IsAccessible)
                 {
-                    mMap.swapTile(currentTile, tilePrefab);
+                    if (Input.GetMouseButtonDown(0))
+                    {
+                        mMap.swapTile(currentTile, tilePrefab, true, true);
+                    }
+                    objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.green);
+                }
+                else
+                {
+                    objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.red);
                 }
             }
         }
-
-        if (getMouseTile())
+        else if(isUsingDestroyTool)
         {
-            objectToPlace.SetActive(true);
-            objectToPlace.transform.position = currentTile.Position;
-            if(currentTile.IsAccessible)
+            if(currentTile.canBeDestroyed)
             {
-                objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.green);
-            }
-            else
-            {
-                objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.red);
+                currentTile.GetComponent<ColorSwapper>().swapColour(Color.red);
+                if (Input.GetMouseButtonDown(0))
+                {
+                    mMap.clearTile(currentTile);
+                }            
             }
         }
-        else
+        // Check to see if the player has clicked a tile and if they have, try to find a path to that 
+        // tile. If we find a path then the character will move along it to the clicked tile. 
+        else if (Input.GetMouseButtonDown(0) && tileIsHighlighted)
         {
-            objectToPlace.SetActive(false);
+            List<EnvironmentTile> route = mMap.Solve(mCharacter.CurrentPosition, currentTile);
+            mCharacter.GoTo(route);
         }
     }
 
@@ -91,6 +115,32 @@ public class Game : MonoBehaviour
         }
 
         return false;
+    }
+
+    public void cancelTool()
+    {
+        isUsingPlaceTool = false;
+        isUsingDestroyTool = false;
+    }
+
+    public void destroyTool()
+    {
+        isUsingPlaceTool = false;
+        isUsingDestroyTool = true;
+    }
+
+    public void selectNewTile(int tileIndex)
+    {
+        isUsingDestroyTool = false;
+        isUsingPlaceTool = true;
+
+        turretPrefab = turretSelection[tileIndex];
+        tilePrefab = environmentTileSelection[tileIndex];
+
+        Destroy(objectToPlace);
+        objectToPlace = Instantiate(turretPrefab);
+        objectToPlace.AddComponent<ColorSwapper>();
+        objectToPlace.SetActive(false);
     }
 
     public void ShowMenu(bool show)

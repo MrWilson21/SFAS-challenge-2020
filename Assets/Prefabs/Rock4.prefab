@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2626918416155790060}
   - component: {fileID: 6828311611057938483}
   - component: {fileID: -5878494148666928974}
+  - component: {fileID: -5248547629452327441}
   m_Layer: 0
   m_Name: Rock4
   m_TagString: Untagged
@@ -107,6 +108,19 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 10, y: 2.5, z: 10}
   m_Center: {x: 5, y: 1.25, z: 5}
+--- !u!114 &-5248547629452327441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4343834459430714928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eab67a2632e7c4642943835dbf276f8f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mixRatio: 0.5
 --- !u!1001 &7512158375272288313
 PrefabInstance:
   m_ObjectHideFlags: 0

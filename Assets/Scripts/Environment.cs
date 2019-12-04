@@ -195,6 +195,7 @@ public class Environment : MonoBehaviour
             EnvironmentTile prefab = tiles[Random.Range(0, tiles.Count)];
             tile = Instantiate(prefab, position, Quaternion.identity, transform);
             tile.IsAccessible = isAccessible;
+            tile.canBeDestroyed = !isAccessible;
             tile.coordinates = new Vector2Int(x, y);
 
             return tile;
@@ -202,6 +203,7 @@ public class Environment : MonoBehaviour
 
         tile = Instantiate(marchingSquareTiles[squareIndex], transform);
         tile.IsAccessible = false;
+        tile.canBeDestroyed = false;
         tile.coordinates = new Vector2Int(x, y);
         tile.transform.Translate(position, Space.World);
         return tile;
@@ -461,7 +463,12 @@ public class Environment : MonoBehaviour
         return result;
     }
 
-    public void swapTile(EnvironmentTile tileToSwap ,EnvironmentTile newTile)
+    public void clearTile(EnvironmentTile tileToClear)
+    {
+        swapTile(tileToClear, marchingSquareTiles[15], false, true);
+    }
+
+    public void swapTile(EnvironmentTile tileToSwap, EnvironmentTile newTile, bool canBeDestoyed, bool isAccessible)
     {
         //Swap an environment tile with a new one
         //New tile is instantiated and 
@@ -470,7 +477,8 @@ public class Environment : MonoBehaviour
 
         EnvironmentTile newInstance = Instantiate(newTile, tileToSwap.gameObject.transform.position, Quaternion.identity, transform);
         newInstance.gameObject.name = tileToSwap.gameObject.name;
-        newInstance.IsAccessible = false;
+        newInstance.IsAccessible = isAccessible;
+        newInstance.canBeDestroyed = canBeDestoyed;
         newInstance.Position = position;
         newInstance.Connections = tileToSwap.Connections;
 
@@ -486,11 +494,5 @@ public class Environment : MonoBehaviour
             }
         }
         mMap[tileCoord.x][tileCoord.y] = newInstance;
-
-        print(mMap[tileCoord.x][tileCoord.y].gameObject);
-        foreach (EnvironmentTile e in mMap[tileCoord.x - 1][tileCoord.y].Connections)
-        {
-            print(e.gameObject);
-        }
     }
 }

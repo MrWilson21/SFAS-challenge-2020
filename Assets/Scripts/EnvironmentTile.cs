@@ -12,4 +12,5 @@ public class EnvironmentTile : MonoBehaviour
     public bool Visited { get; set; }
     public bool IsAccessible { get; set; }
     public Vector2Int coordinates { get; set; }
+    public bool canBeDestroyed { get; set; }
 }
