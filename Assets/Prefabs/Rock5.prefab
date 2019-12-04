@@ -121,6 +121,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mixRatio: 0.5
+  includeParent: 0
 --- !u!1001 &4961084835830129610
 PrefabInstance:
   m_ObjectHideFlags: 0
