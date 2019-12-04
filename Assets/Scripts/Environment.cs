@@ -181,10 +181,10 @@ public class Environment : MonoBehaviour
         floorMap = newMap;
     }
 
-    //Gets the correct tile from the generated floor tiles map
-    //If the tile is a flat ground tile then chose a random obstacle
     private EnvironmentTile getFloorTile(int x, int y, Vector3 position)
     {
+        //Gets the correct tile from the generated floor tiles map
+        //If the tile is a flat ground tile then chose a random obstacle
         int squareIndex = floorMap[x, y] + floorMap[x + 1, y] * 2 + floorMap[x + 1, y + 1] * 4 + floorMap[x, y + 1] * 8;
         EnvironmentTile tile;
 
@@ -195,12 +195,14 @@ public class Environment : MonoBehaviour
             EnvironmentTile prefab = tiles[Random.Range(0, tiles.Count)];
             tile = Instantiate(prefab, position, Quaternion.identity, transform);
             tile.IsAccessible = isAccessible;
+            tile.coordinates = new Vector2Int(x, y);
 
             return tile;
         }
 
         tile = Instantiate(marchingSquareTiles[squareIndex], transform);
         tile.IsAccessible = false;
+        tile.coordinates = new Vector2Int(x, y);
         tile.transform.Translate(position, Space.World);
         return tile;
     }
@@ -246,7 +248,7 @@ public class Environment : MonoBehaviour
             for ( int y = 0; y < Size.y; ++y)
             {
                 EnvironmentTile tile = getFloorTile(x, y, position);
-                tile.Position = new Vector3( position.x + (TileSize / 2), TileHeight, position.z + (TileSize / 2));
+                tile.Position = new Vector3( position.x + (TileSize / 2), TileHeight, position.z + (TileSize / 2));               
                 tile.gameObject.name = string.Format("Tile({0},{1})", x, y);
                 mMap[x][y] = tile;
                 mAll.Add(tile);
@@ -457,5 +459,38 @@ public class Environment : MonoBehaviour
         mLastSolution = result;
 
         return result;
+    }
+
+    public void swapTile(EnvironmentTile tileToSwap ,EnvironmentTile newTile)
+    {
+        //Swap an environment tile with a new one
+        //New tile is instantiated and 
+        Vector2Int tileCoord = tileToSwap.coordinates;
+        Vector3 position = tileToSwap.Position;
+
+        EnvironmentTile newInstance = Instantiate(newTile, tileToSwap.gameObject.transform.position, Quaternion.identity, transform);
+        newInstance.gameObject.name = tileToSwap.gameObject.name;
+        newInstance.IsAccessible = false;
+        newInstance.Position = position;
+        newInstance.Connections = tileToSwap.Connections;
+
+        Destroy(tileToSwap.gameObject);
+        foreach(EnvironmentTile e in tileToSwap.Connections)
+        {
+            for(int i = 0; i < e.Connections.Count; i++)
+            {
+                if(e.Connections[i] == tileToSwap)
+                {
+                    e.Connections[i] = newInstance;
+                }
+            }
+        }
+        mMap[tileCoord.x][tileCoord.y] = newInstance;
+
+        print(mMap[tileCoord.x][tileCoord.y].gameObject);
+        foreach (EnvironmentTile e in mMap[tileCoord.x - 1][tileCoord.y].Connections)
+        {
+            print(e.gameObject);
+        }
     }
 }

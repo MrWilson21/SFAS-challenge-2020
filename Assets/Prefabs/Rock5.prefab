@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5387316810592479953}
   - component: {fileID: 1873235159370765864}
   - component: {fileID: 7154152902380780791}
+  - component: {fileID: -7540379904841668316}
   m_Layer: 0
   m_Name: Rock5
   m_TagString: Untagged
@@ -93,6 +94,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b81c1a74f97fbca4a81350fa9f3bdddb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!65 &-7540379904841668316
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 127164564558258932}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 10, y: 2.5, z: 10}
+  m_Center: {x: 5, y: 1.25, z: 5}
 --- !u!1001 &4961084835830129610
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -100,11 +114,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 4006126310875582695}
     m_Modifications:
-    - target: {fileID: -927199367670048503, guid: 8f538d887b465d94cb3ae54c5e7a9654,
-        type: 3}
-      propertyPath: m_Name
-      value: rock_large5
-      objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 8f538d887b465d94cb3ae54c5e7a9654,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -159,6 +168,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -927199367670048503, guid: 8f538d887b465d94cb3ae54c5e7a9654,
+        type: 3}
+      propertyPath: m_Name
+      value: rock_large5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8f538d887b465d94cb3ae54c5e7a9654, type: 3}

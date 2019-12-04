@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7587216303378429671}
   - component: {fileID: 4213043149412993566}
   - component: {fileID: 4665734947335233729}
+  - component: {fileID: 6451274740248532874}
   m_Layer: 0
   m_Name: TreeLarge
   m_TagString: Untagged
@@ -93,6 +94,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b81c1a74f97fbca4a81350fa9f3bdddb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!65 &6451274740248532874
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2471185783469752002}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 10, y: 2.5, z: 10}
+  m_Center: {x: 5, y: 1.25, z: 5}
 --- !u!1001 &6925956467986050535
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -100,11 +114,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1445712347399408849}
     m_Modifications:
-    - target: {fileID: -927199367670048503, guid: 25a9f89ddfea5e546aa52748c8b9a949,
-        type: 3}
-      propertyPath: m_Name
-      value: palmDetailed_large
-      objectReference: {fileID: 0}
     - target: {fileID: -4216859302048453862, guid: 25a9f89ddfea5e546aa52748c8b9a949,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -159,6 +168,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -927199367670048503, guid: 25a9f89ddfea5e546aa52748c8b9a949,
+        type: 3}
+      propertyPath: m_Name
+      value: palmDetailed_large
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 25a9f89ddfea5e546aa52748c8b9a949, type: 3}
