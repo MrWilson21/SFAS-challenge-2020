@@ -5,6 +5,7 @@ using UnityEngine;
 public class ColorSwapper : MonoBehaviour
 {
     [SerializeField] [Range(0, 1)] private float mixRatio = 0.5f;
+    [SerializeField] private bool includeParent = true;
 
     private List<Material> materials;
     private List<Color> originalColours;
@@ -16,7 +17,7 @@ public class ColorSwapper : MonoBehaviour
 
         foreach (Renderer r in GetComponentsInChildren<Renderer>())
         {
-            if(!r.Equals(GetComponent<Renderer>()))
+            if(!r.Equals(GetComponent<Renderer>()) || includeParent)
             {
                 foreach (Material m in r.materials)
                 {

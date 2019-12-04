@@ -35,6 +35,8 @@ public class Game : MonoBehaviour
 
     private bool tileIsHighlighted = false;
 
+    private bool startPlaced = false;
+
     void Start()
     {
         mRaycastHits = new RaycastHit[NumberOfRaycastHits];
@@ -43,11 +45,17 @@ public class Game : MonoBehaviour
         ShowMenu(true);
 
         selectNewTile(0);
-        cancelTool();
+        //cancelTool();
     }
 
     private void Update()
     {
+        if(!startPlaced)
+        {
+            placeStartPoint();
+            return;
+        }
+
         if (currentTile != null && currentTile.canBeDestroyed)
         {
             print(currentTile);
@@ -72,7 +80,7 @@ public class Game : MonoBehaviour
                 {
                     if (Input.GetMouseButtonDown(0))
                     {
-                        mMap.swapTile(currentTile, tilePrefab, true, true);
+                        mMap.swapTile(currentTile, tilePrefab, true, false);
                     }
                     objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.green);
                 }
@@ -99,6 +107,30 @@ public class Game : MonoBehaviour
         {
             List<EnvironmentTile> route = mMap.Solve(mCharacter.CurrentPosition, currentTile);
             mCharacter.GoTo(route);
+        }
+    }
+
+    private void placeStartPoint()
+    {
+        tileIsHighlighted = getMouseTile();
+        if(tileIsHighlighted)
+        {
+            objectToPlace.SetActive(true);
+            objectToPlace.transform.position = currentTile.Position;
+            if (currentTile.IsAccessible)
+            {
+                if (Input.GetMouseButtonDown(0))
+                {
+                    mMap.swapTile(currentTile, tilePrefab, false, false);
+                    cancelTool();
+                    startPlaced = true;
+                }
+                objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.green);
+            }
+            else
+            {
+                objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.red);
+            }
         }
     }
 
