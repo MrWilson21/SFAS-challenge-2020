@@ -10,6 +10,7 @@ public class Game : MonoBehaviour
     [SerializeField] private Canvas Menu;
     [SerializeField] private Canvas Hud;
     [SerializeField] private Transform CharacterStart;
+    [SerializeField] private int numberOfEnemySpawners;
 
     private RaycastHit[] mRaycastHits;
     private Character mCharacter;
@@ -32,10 +33,16 @@ public class Game : MonoBehaviour
 
     private bool isUsingPlaceTool = false;
     private bool isUsingDestroyTool = false;
-
     private bool tileIsHighlighted = false;
-
     private bool startPlaced = false;
+
+    private bool playingGame = false;
+
+    private int tileRotation = 0; //0 up, 1 right, 2 down, 3 left
+
+    private List<Spawner> spawners;
+
+    float a = 0;
 
     void Start()
     {
@@ -43,69 +50,97 @@ public class Game : MonoBehaviour
         mMap = GetComponentInChildren<Environment>();
         mCharacter = Instantiate(Character, transform); 
         ShowMenu(true);
-
-        selectNewTile(0);
-        //cancelTool();
     }
 
     private void Update()
     {
-        if(!startPlaced)
+        if (playingGame)
         {
-            placeStartPoint();
-            return;
-        }
-
-        if (currentTile != null && currentTile.canBeDestroyed)
-        {
-            currentTile.GetComponent<ColorSwapper>().restoreColour();
-        }
-
-        tileIsHighlighted = getMouseTile();
-        objectToPlace.SetActive(false);
-
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            cancelTool();
-        }
-
-        if(isUsingPlaceTool && tileIsHighlighted)
-        {
-            if(tileIsHighlighted)
+            if (Input.GetKeyDown(KeyCode.R))
             {
-                objectToPlace.SetActive(true);
-                objectToPlace.transform.position = currentTile.Position;
-                if (currentTile.IsAccessible)
+                tileRotation = (tileRotation + 1) % 4;
+            }
+
+            if (!startPlaced)
+            {
+                placeStartPoint();
+                return;
+            }
+            else
+            {
+                if(a > 0.5)
                 {
-                    if (Input.GetMouseButtonDown(0))
+                    foreach (Spawner spawner in spawners)
                     {
-                        mMap.swapTile(currentTile, tilePrefab, true, false);
+                        spawner.spawnEnemy();
+                        a = 0;
                     }
-                    objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.green);
                 }
-                else
-                {
-                    objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.red);
-                }
+                a += Time.deltaTime;
+            }
+
+            if (currentTile != null && currentTile.canBeDestroyed)
+            {
+                currentTile.GetComponent<ColorSwapper>().restoreColour();
+            }
+
+            tileIsHighlighted = getMouseTile();
+            objectToPlace.SetActive(false);
+
+            if (Input.GetKeyDown(KeyCode.C))
+            {
+                cancelTool();
+            }
+
+            if (isUsingPlaceTool && tileIsHighlighted)
+            {
+                usePlaceTool();
+            }
+            else if (isUsingDestroyTool)
+            {
+                useDestroyTool();
+            }
+
+            // Check to see if the player has clicked a tile and if they have, try to find a path to that 
+            // tile. If we find a path then the character will move along it to the clicked tile. 
+            else if (Input.GetMouseButtonDown(0) && tileIsHighlighted)
+            {
+                List<EnvironmentTile> route = mMap.Solve(mCharacter.CurrentPosition, currentTile);
+                mCharacter.GoTo(route);
             }
         }
-        else if(isUsingDestroyTool)
+    }
+
+    private void usePlaceTool()
+    {
+        if (tileIsHighlighted)
         {
-            if(currentTile.canBeDestroyed)
+            objectToPlace.SetActive(true);
+            objectToPlace.transform.position = currentTile.Position;
+            if (currentTile.IsAccessible)
             {
-                currentTile.GetComponent<ColorSwapper>().swapColour(Color.red);
                 if (Input.GetMouseButtonDown(0))
                 {
-                    mMap.clearTile(currentTile);
-                }            
+                    mMap.swapTile(currentTile, tilePrefab, true, false);
+                }
+                objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.green);
+            }
+            else
+            {
+                objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.red);
             }
         }
-        // Check to see if the player has clicked a tile and if they have, try to find a path to that 
-        // tile. If we find a path then the character will move along it to the clicked tile. 
-        else if (Input.GetMouseButtonDown(0) && tileIsHighlighted)
+    }
+
+    private void useDestroyTool()
+    {
+        if (currentTile.canBeDestroyed)
         {
-            List<EnvironmentTile> route = mMap.Solve(mCharacter.CurrentPosition, currentTile);
-            mCharacter.GoTo(route);
+            currentTile.GetComponent<ColorSwapper>().swapColour(Color.red);
+            if (Input.GetMouseButtonDown(0))
+            {
+                mMap.clearTile(currentTile);
+            }
         }
     }
 
@@ -120,9 +155,41 @@ public class Game : MonoBehaviour
             {
                 if (Input.GetMouseButtonDown(0))
                 {
-                    mMap.swapTile(currentTile, tilePrefab, false, false);
-                    cancelTool();
-                    startPlaced = true;
+                    Vector2Int houseEntranceCoord = currentTile.coordinates;
+
+                    switch (tileRotation)
+                    {
+                        case 0:
+                            houseEntranceCoord += new Vector2Int(0, 1);
+                            break;
+                        case 1:
+                            houseEntranceCoord += new Vector2Int(1, 0);
+                            break;
+                        case 2:
+                            houseEntranceCoord += new Vector2Int(0, -1);
+                            break;
+                        case 3:
+                            houseEntranceCoord += new Vector2Int(-1, 0);
+                            break;
+                    }
+
+                    mMap.houseEntrance = mMap.getTileMap()[houseEntranceCoord.x][houseEntranceCoord.y];
+                    currentTile = mMap.swapTile(currentTile, tilePrefab, false, false);
+                    if (mMap.checkIfHouseAccesible())
+                    {
+                        cancelTool();
+                        startPlaced = true;
+
+                        foreach (Spawner spawner in spawners)
+                        {
+                            spawner.housePoint = currentTile;
+                            spawner.route = mMap.Solve(spawner.spawnExitPoint, mMap.houseEntrance);
+                        }
+                    }
+                    else
+                    {
+                        mMap.clearTile(currentTile);
+                    }
                 }
                 objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.green);
             }
@@ -185,6 +252,7 @@ public class Game : MonoBehaviour
             {
                 mCharacter.transform.position = CharacterStart.position;
                 mCharacter.transform.rotation = CharacterStart.rotation;
+                playingGame = false;
                 mMap.CleanUpWorld();
             }
             else
@@ -196,9 +264,28 @@ public class Game : MonoBehaviour
         }
     }
 
-    public void Generate()
+    public void startGame()
+    {
+        isUsingPlaceTool = false;
+        isUsingDestroyTool = false;
+        tileIsHighlighted = false;
+        startPlaced = false;
+        playingGame = true;
+
+        spawners = new List<Spawner>();
+        Generate();
+        selectNewTile(0);
+    }
+
+    public void addSpawner(Spawner spawner)
+    {
+        spawners.Add(spawner);
+    }
+
+    private void Generate()
     {
         mMap.GenerateWorld();
+        spawners = mMap.placeSpawners(numberOfEnemySpawners);
     }
 
     public void Exit()

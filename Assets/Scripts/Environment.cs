@@ -18,6 +18,16 @@ public class Environment : MonoBehaviour
     private List<EnvironmentTile> mToBeTested;
     private List<EnvironmentTile> mLastSolution;
 
+    [SerializeField] private EnvironmentTile enemySpawner;
+
+    private List<EnvironmentTile> PotentialSpawnPointsUp;
+    private List<EnvironmentTile> PotentialSpawnPointsDown;
+    private List<EnvironmentTile> PotentialSpawnPointsLeft;
+    private List<EnvironmentTile> PotentialSpawnPointsRight;
+
+    private List<EnvironmentTile> spawnPoints;
+    public EnvironmentTile houseEntrance { get; set; }
+
     private readonly Vector3 NodeSize = Vector3.one * 9.0f; 
     private const float TileSize = 10.0f;
     private const float TileHeight = 2.5f;
@@ -36,8 +46,7 @@ public class Environment : MonoBehaviour
 
     private void Awake()
     {
-        mAll = new List<EnvironmentTile>();
-        mToBeTested = new List<EnvironmentTile>();
+        initialSetup();
     }
 
     private void OnDrawGizmos()
@@ -181,6 +190,186 @@ public class Environment : MonoBehaviour
         floorMap = newMap;
     }
 
+    private bool checkIfSpawnPointsLink()
+    {
+        if(spawnPoints.Count > 1)
+        {
+            for(int i = 1; i < spawnPoints.Count; i++)
+            {
+                if(Solve(spawnPoints[0], spawnPoints[i]) == null)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public bool checkIfHouseAccesible()
+    {
+        if (spawnPoints.Count > 0)
+        {
+            for (int i = 0; i < spawnPoints.Count; i++)
+            {
+                if(Solve(spawnPoints[0], houseEntrance) == null)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public List<Spawner> placeSpawners(int numberOfSpawners)
+    {
+        //Place a set amount of enemy spawn points around the edges of the islands
+        //Check a random potential tile from each side in order until the correct number of spawners is found or there are no more valid points to check
+        //place spawner tile down and set the entrance point before checking if valid and clear tile if its not valid
+        int count = 0;
+        int emptySideCount = 0;
+        List<Spawner> spawners = new List<Spawner>();
+
+        while(count < numberOfSpawners || emptySideCount == 4)
+        {
+            EnvironmentTile tile;
+            Vector2Int coord;
+            Spawner spawner;
+
+            switch (count % 4)
+            {
+                case 0:
+                    if(PotentialSpawnPointsLeft.Count > 0)
+                    {
+                        tile = PotentialSpawnPointsLeft[pseudoRandom.Next(0, PotentialSpawnPointsLeft.Count)];
+                        PotentialSpawnPointsLeft.Remove(tile);
+                        if (PotentialSpawnPointsLeft.Count == 0)
+                        {
+                            emptySideCount++;
+                        }
+                        coord = tile.coordinates;
+
+                        if (mMap[coord.x - 1][coord.y].IsAccessible && mMap[coord.x - 2][coord.y].IsAccessible)
+                        {
+                            spawnPoints.Add(mMap[coord.x - 2][coord.y]);
+                            spawner = swapTile(mMap[coord.x - 1][coord.y], enemySpawner, false, false).gameObject.GetComponentInChildren<Spawner>();
+                            if (checkIfSpawnPointsLink())
+                            {                           
+                                mMap[coord.x - 1][coord.y].gameObject.transform.GetChild(0).Rotate(new Vector3(0, 1, 0), -90);
+                                spawner.spawnPoint = mMap[coord.x - 1][coord.y];
+                                spawner.spawnExitPoint = mMap[coord.x - 2][coord.y];
+                                spawners.Add(spawner);
+                                count++;
+                            }
+                            else
+                            {
+                                spawnPoints.Remove(mMap[coord.x - 2][coord.y]);
+                                clearTile(mMap[coord.x - 1][coord.y]);
+                            }
+                        }
+                    }
+                    break;
+
+                case 1:
+                    if (PotentialSpawnPointsRight.Count > 0)
+                    {
+                        tile = PotentialSpawnPointsRight[pseudoRandom.Next(0, PotentialSpawnPointsRight.Count)];
+                        PotentialSpawnPointsRight.Remove(tile);
+                        if (PotentialSpawnPointsRight.Count == 0)
+                        {
+                            emptySideCount++;
+                        }
+                        coord = tile.coordinates;
+
+                        if (mMap[coord.x + 1][coord.y].IsAccessible && mMap[coord.x + 2][coord.y].IsAccessible)
+                        {
+                            spawnPoints.Add(mMap[coord.x + 2][coord.y]);
+                            spawner = swapTile(mMap[coord.x + 1][coord.y], enemySpawner, false, false).gameObject.GetComponentInChildren<Spawner>();
+                            if (checkIfSpawnPointsLink())
+                            {
+                                mMap[coord.x + 1][coord.y].gameObject.transform.GetChild(0).Rotate(new Vector3(0, 1, 0), 90);
+                                spawner.spawnPoint = mMap[coord.x + 1][coord.y];
+                                spawner.spawnExitPoint = mMap[coord.x + 2][coord.y];
+                                spawners.Add(spawner);
+                                count++;
+                            }
+                            else
+                            {
+                                spawnPoints.Remove(mMap[coord.x + 2][coord.y]);
+                                clearTile(mMap[coord.x + 1][coord.y]);
+                            }
+                        }
+                    }
+                    break;
+
+                case 2:
+                    if (PotentialSpawnPointsUp.Count > 0)
+                    {
+                        tile = PotentialSpawnPointsUp[pseudoRandom.Next(0, PotentialSpawnPointsUp.Count)];
+                        PotentialSpawnPointsUp.Remove(tile);
+                        if (PotentialSpawnPointsUp.Count == 0)
+                        {
+                            emptySideCount++;
+                        }
+                        coord = tile.coordinates;
+
+                        if (mMap[coord.x][coord.y + 1].IsAccessible && mMap[coord.x][coord.y + 2].IsAccessible)
+                        {
+                            spawnPoints.Add(mMap[coord.x][coord.y + 2]);
+                            spawner = swapTile(mMap[coord.x][coord.y + 1], enemySpawner, false, false).gameObject.GetComponentInChildren<Spawner>();
+                            if (checkIfSpawnPointsLink())
+                            {
+                                spawner.spawnPoint = mMap[coord.x][coord.y + 1];
+                                spawner.spawnExitPoint = mMap[coord.x][coord.y + 2];
+                                spawners.Add(spawner);
+                                count++;
+                            }
+                            else
+                            {
+                                spawnPoints.Remove(mMap[coord.x][coord.y + 2]);
+                                clearTile(mMap[coord.x][coord.y + 1]);
+                            }
+                        }
+                    }
+                    break;
+
+                case 3:
+                    if (PotentialSpawnPointsDown.Count > 0)
+                    {
+                        tile = PotentialSpawnPointsDown[pseudoRandom.Next(0, PotentialSpawnPointsDown.Count)];
+                        PotentialSpawnPointsDown.Remove(tile);
+                        if(PotentialSpawnPointsDown.Count == 0)
+                        {
+                            emptySideCount++;
+                        }
+                        coord = tile.coordinates;
+
+                        if (mMap[coord.x][coord.y - 1].IsAccessible && mMap[coord.x][coord.y - 2].IsAccessible)
+                        {                         
+                            spawnPoints.Add(mMap[coord.x][coord.y - 2]);
+                            spawner = swapTile(mMap[coord.x][coord.y - 1], enemySpawner, false, false).gameObject.GetComponentInChildren<Spawner>();
+                            if (checkIfSpawnPointsLink())
+                            {
+                                mMap[coord.x][coord.y - 1].gameObject.transform.GetChild(0).Rotate(new Vector3(0, 1, 0), 180);
+                                spawner.spawnPoint = mMap[coord.x][coord.y - 1];
+                                spawner.spawnExitPoint = mMap[coord.x][coord.y - 2];
+                                spawners.Add(spawner);
+                                count++;
+                            }
+                            else
+                            {
+                                spawnPoints.Remove(mMap[coord.x][coord.y - 2]);
+                                clearTile(mMap[coord.x][coord.y - 1]);
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
+        return spawners;
+    }
+
     private EnvironmentTile getFloorTile(int x, int y, Vector3 position)
     {
         //Gets the correct tile from the generated floor tiles map
@@ -206,14 +395,48 @@ public class Environment : MonoBehaviour
         tile.canBeDestroyed = false;
         tile.coordinates = new Vector2Int(x, y);
         tile.transform.Translate(position, Space.World);
+
+        //Get all side tiles to place enemy spawners later
+        if (squareIndex == 3)
+        {
+            PotentialSpawnPointsDown.Add(tile);
+        }
+        else if (squareIndex == 6)
+        {
+            PotentialSpawnPointsRight.Add(tile);
+        }
+        else if(squareIndex == 9)
+        {
+            PotentialSpawnPointsLeft.Add(tile);
+        }
+        else if(squareIndex == 12)
+        {
+            PotentialSpawnPointsUp.Add(tile);
+        }
+
         return tile;
+    }
+
+    private void initialSetup()
+    {
+        mAll = new List<EnvironmentTile>();
+        mToBeTested = new List<EnvironmentTile>();
+
+        PotentialSpawnPointsUp = new List<EnvironmentTile>();
+        PotentialSpawnPointsDown = new List<EnvironmentTile>();
+        PotentialSpawnPointsLeft = new List<EnvironmentTile>();
+        PotentialSpawnPointsRight = new List<EnvironmentTile>();
+
+        spawnPoints = new List<EnvironmentTile>();
     }
 
     private void Generate()
     {
-        // Setup the map of the environment tiles according to the specified width and height
-        // Generate tiles from the list of accessible and inaccessible prefabs using a random
-        // and the specified accessible percentage
+    // Setup the map of the environment tiles according to the specified width and height
+    // Generate tiles from the list of accessible and inaccessible prefabs using a random
+    // and the specified accessible percentage
+        initialSetup();
+
         if(randomSeed)
         {
             seed = Random.value.ToString();
@@ -438,7 +661,7 @@ public class Environment : MonoBehaviour
                     result.Add(routeNode);
                     result.Reverse();
 
-                    Debug.LogFormat("Path Found: {0} steps {1} long", result.Count, destination.Local);
+                    //Debug.LogFormat("Path Found: {0} steps {1} long", result.Count, destination.Local);
                 }
                 else
                 {
@@ -463,12 +686,12 @@ public class Environment : MonoBehaviour
         return result;
     }
 
-    public void clearTile(EnvironmentTile tileToClear)
+    public EnvironmentTile clearTile(EnvironmentTile tileToClear)
     {
-        swapTile(tileToClear, marchingSquareTiles[15], false, true);
+        return swapTile(tileToClear, marchingSquareTiles[15], false, true);
     }
 
-    public void swapTile(EnvironmentTile tileToSwap, EnvironmentTile newTile, bool canBeDestoyed, bool isAccessible)
+    public EnvironmentTile swapTile(EnvironmentTile tileToSwap, EnvironmentTile newTile, bool canBeDestoyed, bool isAccessible)
     {
         //Swap an environment tile with a new one
         //New tile is instantiated and 
@@ -498,5 +721,12 @@ public class Environment : MonoBehaviour
             }
         }
         mMap[tileCoord.x][tileCoord.y] = newInstance;
+
+        return mMap[tileCoord.x][tileCoord.y];
+    }
+
+    public EnvironmentTile[][] getTileMap()
+    {
+        return mMap;
     }
 }
