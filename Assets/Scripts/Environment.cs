@@ -198,6 +198,7 @@ public class Environment : MonoBehaviour
             {
                 if(Solve(spawnPoints[0], spawnPoints[i]) == null)
                 {
+                    print("fail");
                     return false;
                 }
             }
@@ -379,9 +380,9 @@ public class Environment : MonoBehaviour
 
         if (squareIndex == 15)
         {
-            bool isAccessible = Random.value < AccessiblePercentage;
+            bool isAccessible = pseudoRandom.NextDouble() < AccessiblePercentage;
             List<EnvironmentTile> tiles = isAccessible ? AccessibleTiles : InaccessibleTiles;
-            EnvironmentTile prefab = tiles[Random.Range(0, tiles.Count)];
+            EnvironmentTile prefab = tiles[pseudoRandom.Next(0, tiles.Count)];
             tile = Instantiate(prefab, position, Quaternion.identity, transform);
             tile.IsAccessible = isAccessible;
             tile.canBeDestroyed = !isAccessible;
@@ -698,7 +699,7 @@ public class Environment : MonoBehaviour
         Vector2Int tileCoord = tileToSwap.coordinates;
         Vector3 position = tileToSwap.Position;
 
-        EnvironmentTile newInstance = Instantiate(newTile, tileToSwap.gameObject.transform.position, Quaternion.identity, transform);
+        EnvironmentTile newInstance = Instantiate(newTile, tileToSwap.gameObject.transform.position, newTile.gameObject.transform.rotation, transform);
         newInstance.gameObject.name = tileToSwap.gameObject.name;
         newInstance.IsAccessible = isAccessible;
         newInstance.canBeDestroyed = canBeDestoyed;

@@ -796,10 +796,10 @@ MonoBehaviour:
   numberOfEnemySpawners: 4
   environmentTileSelection:
   - {fileID: 4170702277641211138, guid: f87f70a2f9055c14da7c5210ddaf84db, type: 3}
-  - {fileID: 4665734947335233729, guid: 84d83d076aecd1044aa0cdd7f246274b, type: 3}
+  - {fileID: 4170702277641211138, guid: f87f70a2f9055c14da7c5210ddaf84db, type: 3}
   turretSelection:
-  - {fileID: 100002, guid: e7e30e3d93b6ede419ee80f7211fcdc5, type: 3}
-  - {fileID: -927199367670048503, guid: 25a9f89ddfea5e546aa52748c8b9a949, type: 3}
+  - {fileID: 4501383907600130360, guid: 3411155ec6ee47040a93fc68925900f0, type: 3}
+  - {fileID: 4501383907600130360, guid: 3411155ec6ee47040a93fc68925900f0, type: 3}
 --- !u!4 &896303072
 Transform:
   m_ObjectHideFlags: 0
@@ -945,6 +945,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraStart: {fileID: 923530643}
+  cameraPlay: {fileID: 0}
 --- !u!1 &1176221212
 GameObject:
   m_ObjectHideFlags: 0
@@ -1073,6 +1074,36 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1176221212}
   m_CullTransparentMesh: 0
+--- !u!1 &1222158975
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1222158976}
+  m_Layer: 0
+  m_Name: cameraStartPos (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1222158976
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1222158975}
+  m_LocalRotation: {x: 0.287084, y: -0, z: -0, w: 0.9579054}
+  m_LocalPosition: {x: -0.6, y: 189, z: -302}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1236939970
 GameObject:
   m_ObjectHideFlags: 0

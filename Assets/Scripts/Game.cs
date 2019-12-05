@@ -6,14 +6,14 @@ using UnityEngine.EventSystems;
 public class Game : MonoBehaviour
 {
     [SerializeField] private Camera MainCamera;
-    [SerializeField] private Character Character;
+    [SerializeField] private Enemy Character;
     [SerializeField] private Canvas Menu;
     [SerializeField] private Canvas Hud;
     [SerializeField] private Transform CharacterStart;
     [SerializeField] private int numberOfEnemySpawners;
 
     private RaycastHit[] mRaycastHits;
-    private Character mCharacter;
+    private Enemy mCharacter;
     private Environment mMap;
 
     private readonly int NumberOfRaycastHits = 1;
@@ -56,9 +56,10 @@ public class Game : MonoBehaviour
     {
         if (playingGame)
         {
-            if (Input.GetKeyDown(KeyCode.R))
+            if (Input.GetKeyDown(KeyCode.R) && objectToPlace != null)
             {
                 tileRotation = (tileRotation + 1) % 4;
+                objectToPlace.transform.transform.Rotate(new Vector3(0, 1, 0), 90);
             }
 
             if (!startPlaced)
@@ -121,7 +122,8 @@ public class Game : MonoBehaviour
             {
                 if (Input.GetMouseButtonDown(0))
                 {
-                    mMap.swapTile(currentTile, tilePrefab, true, false);
+                    currentTile = mMap.swapTile(currentTile, tilePrefab, true, false);
+                    currentTile.transform.GetChild(0).transform.Rotate(new Vector3(0, 1, 0), 90 * tileRotation);
                 }
                 objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.green);
             }
@@ -175,6 +177,7 @@ public class Game : MonoBehaviour
 
                     mMap.houseEntrance = mMap.getTileMap()[houseEntranceCoord.x][houseEntranceCoord.y];
                     currentTile = mMap.swapTile(currentTile, tilePrefab, false, false);
+                    currentTile.transform.GetChild(0).transform.Rotate(new Vector3(0, 1, 0), 90 * tileRotation);
                     if (mMap.checkIfHouseAccesible())
                     {
                         cancelTool();
@@ -239,6 +242,7 @@ public class Game : MonoBehaviour
         objectToPlace = Instantiate(turretPrefab);
         objectToPlace.AddComponent<ColorSwapper>();
         objectToPlace.SetActive(false);
+        objectToPlace.transform.transform.Rotate(new Vector3(0, 1, 0), 90 * tileRotation);
     }
 
     public void ShowMenu(bool show)

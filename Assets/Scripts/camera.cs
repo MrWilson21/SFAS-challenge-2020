@@ -5,6 +5,7 @@ using UnityEngine;
 public class camera : MonoBehaviour
 {
     [SerializeField] private Transform cameraStart;
+    [SerializeField] private Transform cameraPlay;
     private bool isPLaying = false;
 
     private float mainSpeed = 100.0f; //regular speed
@@ -17,7 +18,7 @@ public class camera : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        resetPosition();
+        resetPosition(cameraStart);
     }
 
     void Update()
@@ -83,20 +84,22 @@ public class camera : MonoBehaviour
         return p_Velocity;
     }
 
-    public void resetPosition()
+    public void resetPosition(Transform position)
     {
-        transform.position = cameraStart.position;
-        transform.rotation = cameraStart.rotation;
+        transform.position = position.position;
+        transform.rotation = position.rotation;
     }
 
     public void startGame()
     {
         isPLaying = true;
+        resetPosition(cameraPlay);
     }
 
 
     public void endGame()
     {
         isPLaying = false;
+        resetPosition(cameraStart);
     }
 }

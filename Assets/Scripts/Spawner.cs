@@ -13,11 +13,11 @@ public class Spawner : MonoBehaviour
     //Final tile for enemies to walk to to reach house
     public EnvironmentTile housePoint { get; set; }
 
-    [SerializeField] private Character enemy;
+    [SerializeField] private Enemy enemy;
 
     public void spawnEnemy()
     {
-        Character e = Instantiate(enemy, spawnPoint.Position, Quaternion.identity, transform);
+        Enemy e = Instantiate(enemy, spawnPoint.Position, Quaternion.identity, transform);
 
         List<EnvironmentTile> completeRoute = route;
         completeRoute.Insert(0, spawnPoint);
