@@ -58,7 +58,6 @@ public class Game : MonoBehaviour
 
         if (currentTile != null && currentTile.canBeDestroyed)
         {
-            print(currentTile);
             currentTile.GetComponent<ColorSwapper>().restoreColour();
         }
 

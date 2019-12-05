@@ -481,15 +481,19 @@ public class Environment : MonoBehaviour
         newInstance.canBeDestroyed = canBeDestoyed;
         newInstance.Position = position;
         newInstance.Connections = tileToSwap.Connections;
+        newInstance.coordinates = tileToSwap.coordinates;
+
+        mAll.Remove(tileToSwap);
+        mAll.Add(newInstance);
 
         Destroy(tileToSwap.gameObject);
-        foreach(EnvironmentTile e in tileToSwap.Connections)
+        for(int i = 0; i < tileToSwap.Connections.Count; i++)
         {
-            for(int i = 0; i < e.Connections.Count; i++)
+            for(int j = 0; j < tileToSwap.Connections[i].Connections.Count; j++)
             {
-                if(e.Connections[i] == tileToSwap)
+                if(tileToSwap.Connections[i].Connections[j] == tileToSwap)
                 {
-                    e.Connections[i] = newInstance;
+                    tileToSwap.Connections[i].Connections[j] = newInstance;
                 }
             }
         }
