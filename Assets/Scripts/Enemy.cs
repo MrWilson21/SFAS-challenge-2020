@@ -7,6 +7,11 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float SingleNodeMoveTime = 0.5f;
 
     public EnvironmentTile CurrentPosition { get; set; }
+    public float pathLength { get; set; } = float.MaxValue;
+
+    private int stepsLeft;
+
+    private Spawner spawner;
 
     private IEnumerator DoMove(Vector3 position, Vector3 destination)
     {
@@ -23,6 +28,7 @@ public class Enemy : MonoBehaviour
                 t += Time.deltaTime;
                 p = Vector3.Lerp(position, destination, t / SingleNodeMoveTime);
                 transform.position = p;
+                pathLength = (float)stepsLeft - t;
                 yield return null;
             }
         }
@@ -33,11 +39,13 @@ public class Enemy : MonoBehaviour
         // Move through each tile in the given route
         if (route != null)
         {
+            stepsLeft = route.Count;
             Vector3 position = transform.position; // CurrentPosition.Position;
             for (int count = 0; count < route.Count; ++count)
             {
                 Vector3 next = route[count].Position;
                 yield return DoMove(position, next);
+                stepsLeft--;
                 CurrentPosition = route[count];
                 position = next;
             }
@@ -52,12 +60,22 @@ public class Enemy : MonoBehaviour
         StartCoroutine(DoGoTo(route));
     }
 
+    public void setSpawner(Spawner spawner)
+    {
+        this.spawner = spawner;
+    }
+
     private void OnTriggerEnter(Collider other)
     {
-        //if(other.tag == "house")
+        if(other.CompareTag("house"))
         {
-            print("enemy exited");
-            Destroy(gameObject);
+            die();
         }
+    }
+
+    private void die()
+    {
+        spawner.activeEnemies.Remove(this);
+        Destroy(gameObject);
     }
 }

@@ -42,6 +42,8 @@ public class Game : MonoBehaviour
 
     private List<Spawner> spawners;
 
+    private WaveSpawner waveSpawner;
+
     float a = 0;
 
     void Start()
@@ -50,12 +52,21 @@ public class Game : MonoBehaviour
         mMap = GetComponentInChildren<Environment>();
         mCharacter = Instantiate(Character, transform); 
         ShowMenu(true);
+        waveSpawner = GetComponent<WaveSpawner>();
     }
 
     private void Update()
     {
         if (playingGame)
         {
+            if (currentTile != null && currentTile.canBeDestroyed && !currentTile.IsAccessible)
+            {
+                currentTile.GetComponent<ColorSwapper>().restoreColour();
+            }
+
+            tileIsHighlighted = getMouseTile();
+            objectToPlace.SetActive(false);
+
             if (Input.GetKeyDown(KeyCode.R) && objectToPlace != null)
             {
                 tileRotation = (tileRotation + 1) % 4;
@@ -67,26 +78,6 @@ public class Game : MonoBehaviour
                 placeStartPoint();
                 return;
             }
-            else
-            {
-                if(a > 0.5)
-                {
-                    foreach (Spawner spawner in spawners)
-                    {
-                        spawner.spawnEnemy();
-                        a = 0;
-                    }
-                }
-                a += Time.deltaTime;
-            }
-
-            if (currentTile != null && currentTile.canBeDestroyed)
-            {
-                currentTile.GetComponent<ColorSwapper>().restoreColour();
-            }
-
-            tileIsHighlighted = getMouseTile();
-            objectToPlace.SetActive(false);
 
             if (Input.GetKeyDown(KeyCode.C))
             {
@@ -97,7 +88,7 @@ public class Game : MonoBehaviour
             {
                 usePlaceTool();
             }
-            else if (isUsingDestroyTool)
+            else if (isUsingDestroyTool && tileIsHighlighted)
             {
                 useDestroyTool();
             }
@@ -118,12 +109,29 @@ public class Game : MonoBehaviour
         {
             objectToPlace.SetActive(true);
             objectToPlace.transform.position = currentTile.Position;
-            if (currentTile.IsAccessible)
+            if (currentTile.IsAccessible && currentTile.canBeDestroyed)
             {
                 if (Input.GetMouseButtonDown(0))
                 {
                     currentTile = mMap.swapTile(currentTile, tilePrefab, true, false);
                     currentTile.transform.GetChild(0).transform.Rotate(new Vector3(0, 1, 0), 90 * tileRotation);
+
+                    if (mMap.checkIfHouseAccesible())
+                    {
+                        Turret t = currentTile.GetComponentInChildren<Turret>();
+                        if(t != null)
+                        {
+                            t.setSpawners(spawners);
+                        }
+                        foreach (Spawner spawner in spawners)
+                        {
+                            spawner.route = mMap.Solve(spawner.spawnExitPoint, mMap.houseEntrance);
+                        }
+                    }
+                    else
+                    {
+                        mMap.clearTile(currentTile);
+                    }
                 }
                 objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.green);
             }
@@ -136,7 +144,7 @@ public class Game : MonoBehaviour
 
     private void useDestroyTool()
     {
-        if (currentTile.canBeDestroyed)
+        if (currentTile.canBeDestroyed && !currentTile.IsAccessible)
         {
             currentTile.GetComponent<ColorSwapper>().swapColour(Color.red);
             if (Input.GetMouseButtonDown(0))
@@ -176,6 +184,7 @@ public class Game : MonoBehaviour
                     }
 
                     mMap.houseEntrance = mMap.getTileMap()[houseEntranceCoord.x][houseEntranceCoord.y];
+                    mMap.houseEntrance.canBeDestroyed = false;
                     currentTile = mMap.swapTile(currentTile, tilePrefab, false, false);
                     currentTile.transform.GetChild(0).transform.Rotate(new Vector3(0, 1, 0), 90 * tileRotation);
                     if (mMap.checkIfHouseAccesible())
@@ -188,6 +197,9 @@ public class Game : MonoBehaviour
                             spawner.housePoint = currentTile;
                             spawner.route = mMap.Solve(spawner.spawnExitPoint, mMap.houseEntrance);
                         }
+
+                        waveSpawner.setSpawners(spawners);
+                        waveSpawner.makeWave();
                     }
                     else
                     {
@@ -212,7 +224,10 @@ public class Game : MonoBehaviour
         if (hits > 0)
         {
             currentTile = mRaycastHits[0].transform.GetComponent<EnvironmentTile>();
-            return true;
+            if(currentTile != null)
+            {
+                return true;
+            }         
         }
 
         return false;
@@ -256,6 +271,7 @@ public class Game : MonoBehaviour
             {
                 mCharacter.transform.position = CharacterStart.position;
                 mCharacter.transform.rotation = CharacterStart.rotation;
+                MainCamera.GetComponent<CameraController>().endGame();
                 playingGame = false;
                 mMap.CleanUpWorld();
             }
@@ -275,6 +291,7 @@ public class Game : MonoBehaviour
         tileIsHighlighted = false;
         startPlaced = false;
         playingGame = true;
+        MainCamera.GetComponent<CameraController>().startGame();
 
         spawners = new List<Spawner>();
         Generate();

@@ -198,6 +198,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 143d90f3ad065554b97f76b19f1fc04d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  activeEnemies: []
+  spawnDelay: 5
   enemy: {fileID: -8872175558962971421, guid: 84493eaa65d75074ca2c6e2d8a90ff9a, type: 3}
 --- !u!1 &8745411174313702070
 GameObject:

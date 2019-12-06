@@ -198,7 +198,6 @@ public class Environment : MonoBehaviour
             {
                 if(Solve(spawnPoints[0], spawnPoints[i]) == null)
                 {
-                    print("fail");
                     return false;
                 }
             }
@@ -213,7 +212,7 @@ public class Environment : MonoBehaviour
         {
             for (int i = 0; i < spawnPoints.Count; i++)
             {
-                if(Solve(spawnPoints[0], houseEntrance) == null)
+                if(Solve(spawnPoints[i], houseEntrance) == null)
                 {
                     return false;
                 }
@@ -260,6 +259,7 @@ public class Environment : MonoBehaviour
                                 mMap[coord.x - 1][coord.y].gameObject.transform.GetChild(0).Rotate(new Vector3(0, 1, 0), -90);
                                 spawner.spawnPoint = mMap[coord.x - 1][coord.y];
                                 spawner.spawnExitPoint = mMap[coord.x - 2][coord.y];
+                                spawner.spawnExitPoint.canBeDestroyed = false;
                                 spawners.Add(spawner);
                                 count++;
                             }
@@ -292,6 +292,7 @@ public class Environment : MonoBehaviour
                                 mMap[coord.x + 1][coord.y].gameObject.transform.GetChild(0).Rotate(new Vector3(0, 1, 0), 90);
                                 spawner.spawnPoint = mMap[coord.x + 1][coord.y];
                                 spawner.spawnExitPoint = mMap[coord.x + 2][coord.y];
+                                spawner.spawnExitPoint.canBeDestroyed = false;
                                 spawners.Add(spawner);
                                 count++;
                             }
@@ -323,6 +324,7 @@ public class Environment : MonoBehaviour
                             {
                                 spawner.spawnPoint = mMap[coord.x][coord.y + 1];
                                 spawner.spawnExitPoint = mMap[coord.x][coord.y + 2];
+                                spawner.spawnExitPoint.canBeDestroyed = false;
                                 spawners.Add(spawner);
                                 count++;
                             }
@@ -355,6 +357,7 @@ public class Environment : MonoBehaviour
                                 mMap[coord.x][coord.y - 1].gameObject.transform.GetChild(0).Rotate(new Vector3(0, 1, 0), 180);
                                 spawner.spawnPoint = mMap[coord.x][coord.y - 1];
                                 spawner.spawnExitPoint = mMap[coord.x][coord.y - 2];
+                                spawner.spawnExitPoint.canBeDestroyed = false;
                                 spawners.Add(spawner);
                                 count++;
                             }
@@ -385,7 +388,7 @@ public class Environment : MonoBehaviour
             EnvironmentTile prefab = tiles[pseudoRandom.Next(0, tiles.Count)];
             tile = Instantiate(prefab, position, Quaternion.identity, transform);
             tile.IsAccessible = isAccessible;
-            tile.canBeDestroyed = !isAccessible;
+            tile.canBeDestroyed = true;
             tile.coordinates = new Vector2Int(x, y);
 
             return tile;
@@ -689,7 +692,7 @@ public class Environment : MonoBehaviour
 
     public EnvironmentTile clearTile(EnvironmentTile tileToClear)
     {
-        return swapTile(tileToClear, marchingSquareTiles[15], false, true);
+        return swapTile(tileToClear, marchingSquareTiles[15], true, true);
     }
 
     public EnvironmentTile swapTile(EnvironmentTile tileToSwap, EnvironmentTile newTile, bool canBeDestoyed, bool isAccessible)

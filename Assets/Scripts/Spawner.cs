@@ -13,11 +13,37 @@ public class Spawner : MonoBehaviour
     //Final tile for enemies to walk to to reach house
     public EnvironmentTile housePoint { get; set; }
 
+    public List<Enemy> activeEnemies;
+
+    private List<Enemy> wave;
+    [SerializeField] private float spawnDelay = 1;
+
     [SerializeField] private Enemy enemy;
 
-    public void spawnEnemy()
+    public void setWave(List<Enemy> wave)
     {
-        Enemy e = Instantiate(enemy, spawnPoint.Position, Quaternion.identity, transform);
+        StopAllCoroutines();
+        this.wave = wave;
+        activeEnemies = new List<Enemy>();
+        StartCoroutine(doWave());
+    }
+
+    private IEnumerator doWave()
+    {
+        while (wave.Count > 0)
+        {
+            spawnEnemy();
+            wave.RemoveAt(wave.Count - 1);
+            yield return new WaitForSeconds(spawnDelay);
+        }  
+    }
+
+    private void spawnEnemy()
+    {
+        Enemy e = Instantiate(wave[wave.Count - 1], spawnPoint.Position, Quaternion.identity, transform);
+        activeEnemies.Add(e);
+
+        e.setSpawner(this);
 
         List<EnvironmentTile> completeRoute = route;
         completeRoute.Insert(0, spawnPoint);

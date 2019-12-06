@@ -768,6 +768,7 @@ GameObject:
   m_Component:
   - component: {fileID: 896303072}
   - component: {fileID: 896303071}
+  - component: {fileID: 896303073}
   m_Layer: 0
   m_Name: Game
   m_TagString: Untagged
@@ -796,10 +797,10 @@ MonoBehaviour:
   numberOfEnemySpawners: 4
   environmentTileSelection:
   - {fileID: 4170702277641211138, guid: f87f70a2f9055c14da7c5210ddaf84db, type: 3}
-  - {fileID: 4170702277641211138, guid: f87f70a2f9055c14da7c5210ddaf84db, type: 3}
+  - {fileID: 4716760469978012673, guid: 330648cf1bc07ea4daf9c3343860af39, type: 3}
   turretSelection:
   - {fileID: 4501383907600130360, guid: 3411155ec6ee47040a93fc68925900f0, type: 3}
-  - {fileID: 4501383907600130360, guid: 3411155ec6ee47040a93fc68925900f0, type: 3}
+  - {fileID: 4453241291399976544, guid: 7625159eaf860d64da336869090343a9, type: 3}
 --- !u!4 &896303072
 Transform:
   m_ObjectHideFlags: 0
@@ -818,6 +819,22 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &896303073
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 896303070}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be41297a13818234da9062fbb568d17f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enemyCount: 0a00000002000000
+  spawnerEnemies:
+  - {fileID: -8872175558962971421, guid: 84493eaa65d75074ca2c6e2d8a90ff9a, type: 3}
+  - {fileID: 4907538443406093849, guid: ee610cc33c95b0845bdbbe260ee729b8, type: 3}
 --- !u!1 &923530642
 GameObject:
   m_ObjectHideFlags: 0
@@ -945,7 +962,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraStart: {fileID: 923530643}
-  cameraPlay: {fileID: 0}
+  cameraPlay: {fileID: 1222158976}
+  mainSpeed: 100
+  shiftAdd: 250
+  maxShift: 1000
+  camSens: 0.25
 --- !u!1 &1176221212
 GameObject:
   m_ObjectHideFlags: 0
@@ -1084,7 +1105,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1222158976}
   m_Layer: 0
-  m_Name: cameraStartPos (1)
+  m_Name: CameraPlayPos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1097,13 +1118,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1222158975}
-  m_LocalRotation: {x: 0.287084, y: -0, z: -0, w: 0.9579054}
-  m_LocalPosition: {x: -0.6, y: 189, z: -302}
+  m_LocalRotation: {x: 0.12186928, y: 0, z: 0, w: 0.9925462}
+  m_LocalPosition: {x: -0.6, y: 49.01, z: -91.29}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 14, y: 0, z: 0}
 --- !u!1 &1236939970
 GameObject:
   m_ObjectHideFlags: 0
@@ -1324,7 +1345,7 @@ Canvas:
   serializedVersion: 3
   m_RenderMode: 1
   m_Camera: {fileID: 963194227}
-  m_PlaneDistance: 100
+  m_PlaneDistance: 5
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
   m_OverrideSorting: 0

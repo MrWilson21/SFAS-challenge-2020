@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class camera : MonoBehaviour
+public class CameraController : MonoBehaviour
 {
     [SerializeField] private Transform cameraStart;
     [SerializeField] private Transform cameraPlay;
     private bool isPLaying = false;
 
-    private float mainSpeed = 100.0f; //regular speed
-    private float shiftAdd = 250.0f; //multiplied by how long shift is held.  Basically running
-    private float maxShift = 1000.0f; //Maximum speed when holdin gshift
-    private float camSens = 0.25f; //How sensitive it with mouse
+    [SerializeField] private float mainSpeed = 100.0f; //regular speed
+    [SerializeField] private float shiftAdd = 250.0f; //multiplied by how long shift is held.  Basically running
+    [SerializeField] private float maxShift = 1000.0f; //Maximum speed when holding gshift
+    [SerializeField] private float camSens = 0.25f; //How sensitive it with mouse
     private Vector3 lastMouse = new Vector3(255, 255, 255); //kind of in the middle of the screen, rather than at the top (play)
     private float totalRun = 1.0f;
 
