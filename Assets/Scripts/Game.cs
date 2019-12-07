@@ -43,7 +43,7 @@ public class Game : MonoBehaviour
     private List<Spawner> spawners;
 
     private WaveSpawner waveSpawner;
-
+    [Range(0.01f, 2)] public float timeScale;
     float a = 0;
 
     void Start()
@@ -57,6 +57,7 @@ public class Game : MonoBehaviour
 
     private void Update()
     {
+        Time.timeScale = timeScale;
         if (playingGame)
         {
             if (currentTile != null && currentTile.canBeDestroyed && !currentTile.IsAccessible)

@@ -78,4 +78,9 @@ public class Enemy : MonoBehaviour
         spawner.activeEnemies.Remove(this);
         Destroy(gameObject);
     }
+
+    public void doDamage(float damage)
+    {
+        die();
+    }
 }

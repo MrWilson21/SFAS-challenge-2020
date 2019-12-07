@@ -137,10 +137,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gunBarrel: {fileID: 5793001391191215715}
   range: 30
-  rotationSpeed: 500
+  rotationSpeed: 1000
   bullet: {fileID: 9177913578465112841, guid: 12ea0a574b594264685afffd52fff036, type: 3}
-  shootDelay: 0.3
+  shootDelay: 0.15
   bulletDamage: 0
+  enemyHeight: 1.5
 --- !u!1001 &7902169751554168175
 PrefabInstance:
   m_ObjectHideFlags: 0

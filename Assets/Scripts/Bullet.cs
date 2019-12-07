@@ -16,4 +16,10 @@ public class Bullet : MonoBehaviour
 
         Destroy(gameObject, lifeSpan);
     }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        collision.gameObject.GetComponent<Enemy>().doDamage(damage);
+        Destroy(gameObject);
+    }
 }

@@ -45,9 +45,10 @@ public class Spawner : MonoBehaviour
 
         e.setSpawner(this);
 
-        List<EnvironmentTile> completeRoute = route;
+        List<EnvironmentTile> completeRoute = new List<EnvironmentTile>();
+        completeRoute.AddRange(route);
         completeRoute.Insert(0, spawnPoint);
         completeRoute.Add(housePoint);
-        e.GoTo(route);
+        e.GoTo(completeRoute);
     }
 }
