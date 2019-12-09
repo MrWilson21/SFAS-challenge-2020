@@ -8,6 +8,7 @@ public class Bullet : MonoBehaviour
     [SerializeField] private float lifeSpan;
 
     private float damage;
+    private bool hit = false;
 
     public void setShot(float damage)
     {
@@ -19,7 +20,11 @@ public class Bullet : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        collision.gameObject.GetComponent<Enemy>().doDamage(damage);
+        if(!hit)
+        {
+            collision.gameObject.GetComponent<Enemy>().doDamage(damage);
+            hit = true;
+        }      
         Destroy(gameObject);
     }
 }

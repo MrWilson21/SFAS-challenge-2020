@@ -18,7 +18,7 @@ public class WaveSpawner : MonoBehaviour
     {
         this.spawners = spawners;
         maxNumberOfSpawners = spawners.Count;
-        numberOfActiveSpawners = 1;
+        numberOfActiveSpawners = 4;
     }
 
     public void makeWave()

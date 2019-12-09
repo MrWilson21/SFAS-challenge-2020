@@ -1000,6 +1000,7 @@ GameObject:
   - component: {fileID: 4839227601444686941}
   - component: {fileID: 3288296353816699175}
   - component: {fileID: 4907538443406093849}
+  - component: {fileID: 8111156018522963571}
   m_Layer: 9
   m_Name: Boximon Fiery
   m_TagString: Untagged
@@ -1016,7 +1017,7 @@ Transform:
   m_GameObject: {fileID: 8463171921481481806}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 14.851548, y: 8.5024605, z: 1.2938123}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children:
   - {fileID: 7548907976406674732}
   - {fileID: 1492918262846916121}
@@ -1065,7 +1066,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83a54eb577d5feb4b9c8795381354de9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SingleNodeMoveTime: 0.3
+  SingleNodeMoveTime: 1
+--- !u!136 &8111156018522963571
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8463171921481481806}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.5
+  m_Height: 1.7
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.49, z: 0}
 --- !u!1 &8619969737425358507
 GameObject:
   m_ObjectHideFlags: 0
