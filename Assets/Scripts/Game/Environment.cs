@@ -7,9 +7,9 @@ public class Environment : MonoBehaviour
     [SerializeField] private List<EnvironmentTile> AccessibleTiles;
     [SerializeField] private List<EnvironmentTile> InaccessibleTiles;
     private Vector2Int Size;
-    [SerializeField] private float AccessiblePercentage;
+    public float AccessiblePercentage;
 
-    [Range(0, 1)] [SerializeField] private float LandFillPercent;
+    [Range(0, 1)] public float LandFillPercent;
     [SerializeField] private int numberOfSmoothingIterations;
     [SerializeField] private int numberOfSmoothingIterationsAfterScaleUp;
 
@@ -36,11 +36,11 @@ public class Environment : MonoBehaviour
 
     private int[,] floorMap;
     [SerializeField] private List<EnvironmentTile> marchingSquareTiles;
-    [SerializeField] private Vector2Int initialSize;
-    [SerializeField] private int scaleUpFactor;
+    public Vector2Int initialSize;
+    public int scaleUpFactor;
     [SerializeField] private int borderSize;
     private System.Random pseudoRandom;
-    [SerializeField] private string seed;
+    [SerializeField] public string seed;
     [SerializeField] private bool randomSeed;
 
 
@@ -386,7 +386,9 @@ public class Environment : MonoBehaviour
             bool isAccessible = pseudoRandom.NextDouble() < AccessiblePercentage;
             List<EnvironmentTile> tiles = isAccessible ? AccessibleTiles : InaccessibleTiles;
             EnvironmentTile prefab = tiles[pseudoRandom.Next(0, tiles.Count)];
-            tile = Instantiate(prefab, position, Quaternion.identity, transform);
+            //tile = Instantiate(prefab, position, Quaternion.identity, transform);
+            tile = Instantiate(prefab, transform);
+            tile.transform.Translate(position, Space.World);
             tile.IsAccessible = isAccessible;
             tile.canBeDestroyed = true;
             tile.coordinates = new Vector2Int(x, y);
@@ -468,7 +470,7 @@ public class Environment : MonoBehaviour
 
         int halfWidth = Size.x / 2;
         int halfHeight = Size.y / 2;
-        Vector3 position = new Vector3( -(halfWidth * TileSize), 0.0f, -(halfHeight * TileSize) );
+        Vector3 position = new Vector3( -(halfWidth * TileSize), 0.0f, -(halfHeight * TileSize));
         bool start = true;
 
         for ( int x = 0; x < Size.x; ++x)
@@ -477,7 +479,7 @@ public class Environment : MonoBehaviour
             for ( int y = 0; y < Size.y; ++y)
             {
                 EnvironmentTile tile = getFloorTile(x, y, position);
-                tile.Position = new Vector3( position.x + (TileSize / 2), TileHeight, position.z + (TileSize / 2));               
+                tile.Position = new Vector3( position.x + (TileSize / 2), TileHeight, position.z + (TileSize / 2)) + transform.position;               
                 tile.gameObject.name = string.Format("Tile({0},{1})", x, y);
                 mMap[x][y] = tile;
                 mAll.Add(tile);

@@ -6,7 +6,7 @@ public class CameraController : MonoBehaviour
 {
     [SerializeField] private Transform cameraStart;
     [SerializeField] private Transform cameraPlay;
-    private bool isPLaying = false;
+    private bool isPLaying;
 
     [SerializeField] private float mainSpeed = 100.0f; //regular speed
     [SerializeField] private float shiftAdd = 250.0f; //multiplied by how long shift is held.  Basically running
@@ -19,47 +19,48 @@ public class CameraController : MonoBehaviour
     void Start()
     {
         resetPosition(cameraStart);
+        isPLaying = false;
     }
 
     void Update()
     {
-
-        lastMouse = Input.mousePosition - lastMouse;
-        lastMouse = new Vector3(-lastMouse.y * camSens, lastMouse.x * camSens, 0);
-        lastMouse = new Vector3(transform.eulerAngles.x + lastMouse.x, transform.eulerAngles.y + lastMouse.y, 0);
-
-        if (Input.GetMouseButton(1))
+        if(isPLaying)
         {
-            transform.eulerAngles = lastMouse;
-        }
-        lastMouse = Input.mousePosition;
+            lastMouse = Input.mousePosition - lastMouse;
+            lastMouse = new Vector3(-lastMouse.y * camSens, lastMouse.x * camSens, 0);
+            lastMouse = new Vector3(transform.eulerAngles.x + lastMouse.x, transform.eulerAngles.y + lastMouse.y, 0);
 
-        //Keyboard commands
-        float f = 0.0f;
-        Vector3 p = GetBaseInput();
-        if (Input.GetKey(KeyCode.LeftShift))
-        {
-            totalRun += Time.deltaTime;
-            p = p * totalRun * shiftAdd;
-            p.x = Mathf.Clamp(p.x, -maxShift, maxShift);
-            p.y = Mathf.Clamp(p.y, -maxShift, maxShift);
-            p.z = Mathf.Clamp(p.z, -maxShift, maxShift);
-        }
-        else
-        {
-            totalRun = Mathf.Clamp(totalRun * 0.5f, 1f, 1000f);
-            p = p * mainSpeed;
-        }
+            if (Input.GetMouseButton(1))
+            {
+                transform.eulerAngles = lastMouse;
+            }
+            lastMouse = Input.mousePosition;
 
-        p = p * Time.deltaTime;
-        Vector3 newPosition = transform.position;
-         //If player wants to move on X and Z axis only
+            //Keyboard commands
+            float f = 0.0f;
+            Vector3 p = GetBaseInput();
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                totalRun += Time.deltaTime;
+                p = p * totalRun * shiftAdd;
+                p.x = Mathf.Clamp(p.x, -maxShift, maxShift);
+                p.y = Mathf.Clamp(p.y, -maxShift, maxShift);
+                p.z = Mathf.Clamp(p.z, -maxShift, maxShift);
+            }
+            else
+            {
+                totalRun = Mathf.Clamp(totalRun * 0.5f, 1f, 1000f);
+                p = p * mainSpeed;
+            }
+
+            p = p * Time.deltaTime;
+            Vector3 newPosition = transform.position;
+            //If player wants to move on X and Z axis only
             transform.Translate(p);
             newPosition.x = transform.position.x;
             newPosition.z = transform.position.z;
             transform.position = newPosition;
-
-
+        }
     }
 
     private Vector3 GetBaseInput()
@@ -95,7 +96,6 @@ public class CameraController : MonoBehaviour
         isPLaying = true;
         resetPosition(cameraPlay);
     }
-
 
     public void endGame()
     {

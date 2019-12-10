@@ -293,19 +293,14 @@ public class Game : MonoBehaviour
         startPlaced = false;
         playingGame = true;
         MainCamera.GetComponent<CameraController>().startGame();
-
-        spawners = new List<Spawner>();
+ 
         Generate();
         selectNewTile(0);
     }
 
-    public void addSpawner(Spawner spawner)
+    public void Generate()
     {
-        spawners.Add(spawner);
-    }
-
-    private void Generate()
-    {
+        mMap.CleanUpWorld();
         mMap.GenerateWorld();
         spawners = mMap.placeSpawners(numberOfEnemySpawners);
     }
