@@ -20,6 +20,6 @@ public class LoadTexture : MonoBehaviour
         gameObjectTex = getImage;
 
         byte[] bytes = gameObjectTex.EncodeToPNG();
-        File.WriteAllBytes(Application.dataPath + imageName, bytes);
+        File.WriteAllBytes(Application.dataPath + "/" + imageName + ".png", bytes);
     }
 }

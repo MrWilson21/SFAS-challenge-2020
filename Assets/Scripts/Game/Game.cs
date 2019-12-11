@@ -2,19 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using TMPro;
 
 public class Game : MonoBehaviour
 {
     [SerializeField] private Camera MainCamera;
-    [SerializeField] private Enemy Character;
-    [SerializeField] private Canvas Menu;
-    [SerializeField] private Canvas Hud;
-    [SerializeField] private Transform CharacterStart;
     [SerializeField] private int numberOfEnemySpawners;
+    [SerializeField] private AnimationCurve moneyFromEnemiesCurve;
 
     private RaycastHit[] mRaycastHits;
-    private Enemy mCharacter;
     private Environment mMap;
+    private MenuController menu;
 
     private readonly int NumberOfRaycastHits = 1;
 
@@ -43,65 +42,110 @@ public class Game : MonoBehaviour
     private List<Spawner> spawners;
 
     private WaveSpawner waveSpawner;
-    [Range(0.01f, 2)] public float timeScale;
-    float a = 0;
+    private float timeUntilWave;
+    [SerializeField] private float waveDelay;
+    private bool isDoingWave;
+    private int waveCount;
+    private int enemyCount;
+
+    [SerializeField] private Button cancelToolButton;
+    [SerializeField] private TMP_Text waveNumber;
+    [SerializeField] private TMP_Text numberOfEnemies;
+    [SerializeField] private TMP_Text moneyText;
+    [SerializeField] private Slider healthSlider;
+    [SerializeField] private TMP_Text healthText;
+    [SerializeField] private TMP_Text nextWaveBonus;
+    [SerializeField] private TMP_Text nextWaveCountdown;
+
+    private int money;
 
     void Start()
     {
         mRaycastHits = new RaycastHit[NumberOfRaycastHits];
         mMap = GetComponentInChildren<Environment>();
-        mCharacter = Instantiate(Character, transform); 
-        ShowMenu(true);
+        menu = GetComponent<MenuController>();
         waveSpawner = GetComponent<WaveSpawner>();
     }
 
     private void Update()
     {
-        Time.timeScale = timeScale;
         if (playingGame)
         {
-            if (currentTile != null && currentTile.canBeDestroyed && !currentTile.IsAccessible)
-            {
-                currentTile.GetComponent<ColorSwapper>().restoreColour();
-            }
+            doGameUpdate();
+        }
+    }
 
-            tileIsHighlighted = getMouseTile();
+    private void doGameUpdate()
+    {
+        if (currentTile != null && currentTile.canBeDestroyed && !currentTile.IsAccessible)
+        {
+            currentTile.GetComponent<ColorSwapper>().restoreColour();
+        }
+        tileIsHighlighted = getMouseTile();
+
+        if(objectToPlace != null)
+        {
             objectToPlace.SetActive(false);
-
-            if (Input.GetKeyDown(KeyCode.R) && objectToPlace != null)
+            if (Input.GetKeyDown(KeyCode.R))
             {
                 tileRotation = (tileRotation + 1) % 4;
                 objectToPlace.transform.transform.Rotate(new Vector3(0, 1, 0), 90);
             }
+        }       
 
-            if (!startPlaced)
+        if(isUsingPlaceTool && tileIsHighlighted)
+        {
+            if(!startPlaced)
             {
                 placeStartPoint();
-                return;
             }
-
-            if (Input.GetKeyDown(KeyCode.C))
-            {
-                cancelTool();
-            }
-
-            if (isUsingPlaceTool && tileIsHighlighted)
+            else
             {
                 usePlaceTool();
             }
-            else if (isUsingDestroyTool && tileIsHighlighted)
-            {
-                useDestroyTool();
-            }
+        }
+        else if (isUsingDestroyTool && tileIsHighlighted)
+        {
+            useDestroyTool();
+        }
 
-            // Check to see if the player has clicked a tile and if they have, try to find a path to that 
-            // tile. If we find a path then the character will move along it to the clicked tile. 
-            else if (Input.GetMouseButtonDown(0) && tileIsHighlighted)
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            cancelTool();
+        }
+
+        if(!isDoingWave && startPlaced)
+        {
+            timeUntilWave -= Time.deltaTime;
+            if (timeUntilWave <= 0)
             {
-                List<EnvironmentTile> route = mMap.Solve(mCharacter.CurrentPosition, currentTile);
-                mCharacter.GoTo(route);
+                menu.startWave(false);
+            }
+            else
+            {
+                nextWaveCountdown.text = "Next wave in " + (int)timeUntilWave;
+                nextWaveBonus.text = "<< Start now for bonus $" + calculateNextWaveBonus();
             }
         }
+    }
+
+    private int calculateNextWaveBonus()
+    {
+        float money = Mathf.Pow(1.1f, timeUntilWave);
+        money *= moneyFromEnemiesCurve.Evaluate(waveCount);
+        return (int)money;
+    }
+
+    private void updateMoney(int moneyToAdd)
+    {
+        money += moneyToAdd;
+        moneyText.text = "$" + money;
+    }
+
+    private void updateEnemyCount(int enemiesToRemove)
+    {
+        enemyCount -= enemiesToRemove;
+        numberOfEnemies.text = "Enemies remaining: " + enemyCount;
     }
 
     private void usePlaceTool()
@@ -157,63 +201,61 @@ public class Game : MonoBehaviour
 
     private void placeStartPoint()
     {
-        tileIsHighlighted = getMouseTile();
-        if(tileIsHighlighted)
+        objectToPlace.SetActive(true);
+        objectToPlace.transform.position = currentTile.Position;
+        if (currentTile.IsAccessible)
         {
-            objectToPlace.SetActive(true);
-            objectToPlace.transform.position = currentTile.Position;
-            if (currentTile.IsAccessible)
+            if (Input.GetMouseButtonDown(0))
             {
-                if (Input.GetMouseButtonDown(0))
+                Vector2Int houseEntranceCoord = currentTile.coordinates;
+
+                switch (tileRotation)
                 {
-                    Vector2Int houseEntranceCoord = currentTile.coordinates;
-
-                    switch (tileRotation)
-                    {
-                        case 0:
-                            houseEntranceCoord += new Vector2Int(0, 1);
-                            break;
-                        case 1:
-                            houseEntranceCoord += new Vector2Int(1, 0);
-                            break;
-                        case 2:
-                            houseEntranceCoord += new Vector2Int(0, -1);
-                            break;
-                        case 3:
-                            houseEntranceCoord += new Vector2Int(-1, 0);
-                            break;
-                    }
-
-                    mMap.houseEntrance = mMap.getTileMap()[houseEntranceCoord.x][houseEntranceCoord.y];
-                    mMap.houseEntrance.canBeDestroyed = false;
-                    currentTile = mMap.swapTile(currentTile, tilePrefab, false, false);
-                    currentTile.transform.GetChild(0).transform.Rotate(new Vector3(0, 1, 0), 90 * tileRotation);
-                    if (mMap.checkIfHouseAccesible())
-                    {
-                        cancelTool();
-                        startPlaced = true;
-
-                        foreach (Spawner spawner in spawners)
-                        {
-                            spawner.housePoint = currentTile;
-                            spawner.route = mMap.Solve(spawner.spawnExitPoint, mMap.houseEntrance);
-                        }
-
-                        waveSpawner.setSpawners(spawners);
-                        waveSpawner.makeWave();
-                    }
-                    else
-                    {
-                        mMap.clearTile(currentTile);
-                    }
+                    case 0:
+                        houseEntranceCoord += new Vector2Int(0, 1);
+                        break;
+                    case 1:
+                        houseEntranceCoord += new Vector2Int(1, 0);
+                        break;
+                    case 2:
+                        houseEntranceCoord += new Vector2Int(0, -1);
+                        break;
+                    case 3:
+                        houseEntranceCoord += new Vector2Int(-1, 0);
+                        break;
                 }
-                objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.green);
+
+                mMap.houseEntrance = mMap.getTileMap()[houseEntranceCoord.x][houseEntranceCoord.y];
+                mMap.houseEntrance.canBeDestroyed = false;
+                currentTile = mMap.swapTile(currentTile, tilePrefab, false, false);
+                currentTile.transform.GetChild(0).transform.Rotate(new Vector3(0, 1, 0), 90 * tileRotation);
+                if (mMap.checkIfHouseAccesible())
+                {
+                    cancelTool();
+                    startPlaced = true;
+
+                    foreach (Spawner spawner in spawners)
+                    {
+                        spawner.housePoint = currentTile;
+                        spawner.setGame(this);
+                        spawner.route = mMap.Solve(spawner.spawnExitPoint, mMap.houseEntrance);
+                    }
+
+                    waveSpawner.setSpawners(spawners);
+                    timeUntilWave = waveDelay;
+                    menu.startPlaced();
+                }
+                else
+                {
+                    mMap.clearTile(currentTile);
+                }
             }
-            else
-            {
-                objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.red);
-            }
+            objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.green);
         }
+        else
+        {
+            objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.red);
+        }        
     }
 
     private bool getMouseTile()
@@ -222,12 +264,12 @@ public class Game : MonoBehaviour
         //If there is one return true and set currentTile
         Ray screenClick = MainCamera.ScreenPointToRay(Input.mousePosition);
         int hits = Physics.RaycastNonAlloc(screenClick, mRaycastHits);
-        if (hits > 0)
+        if (hits > 0 && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
         {
             currentTile = mRaycastHits[0].transform.GetComponent<EnvironmentTile>();
             if(currentTile != null)
             {
-                return true;
+                return true;               
             }         
         }
 
@@ -238,12 +280,14 @@ public class Game : MonoBehaviour
     {
         isUsingPlaceTool = false;
         isUsingDestroyTool = false;
+        cancelToolButton.enabled = false;
     }
 
     public void destroyTool()
     {
         isUsingPlaceTool = false;
         isUsingDestroyTool = true;
+        cancelToolButton.enabled = true;
     }
 
     public void selectNewTile(int tileIndex)
@@ -259,30 +303,58 @@ public class Game : MonoBehaviour
         objectToPlace.AddComponent<ColorSwapper>();
         objectToPlace.SetActive(false);
         objectToPlace.transform.transform.Rotate(new Vector3(0, 1, 0), 90 * tileRotation);
+
+        cancelToolButton.enabled = true;
     }
 
-    public void ShowMenu(bool show)
+    public void startWave(bool earlyStart)
     {
-        if (Menu != null && Hud != null)
-        {
-            Menu.enabled = show;
-            Hud.enabled = !show;
+        waveNumber.text = "Wave " + waveCount;
+        waveSpawner.makeWave(waveCount);
+        enemyCount = waveSpawner.totalNumberOfEnemies;
+        updateEnemyCount(0);
+        timeUntilWave = waveDelay;
+        isDoingWave = true;
+        cancelTool();
 
-            if( show )
-            {
-                mCharacter.transform.position = CharacterStart.position;
-                mCharacter.transform.rotation = CharacterStart.rotation;
-                MainCamera.GetComponent<CameraController>().endGame();
-                playingGame = false;
-                mMap.CleanUpWorld();
-            }
-            else
-            {
-                mCharacter.transform.position = mMap.Start.Position;
-                mCharacter.transform.rotation = Quaternion.identity;
-                mCharacter.CurrentPosition = mMap.Start;
-            }
+        if(earlyStart)
+        {
+            updateMoney(calculateNextWaveBonus());
         }
+    }
+
+    private void endWave()
+    {
+        waveCount++;
+        isDoingWave = false;
+    }
+
+    public void enemyReachesEnd()
+    {
+        updateEnemyCount(1);
+        if (enemyCount == 0)
+        {
+            menu.endWave();
+            endWave();
+        }
+    }
+
+    public void enemyDie(float moneyMultiplier)
+    {
+        updateMoney((int)(moneyFromEnemiesCurve.Evaluate(waveCount) * moneyMultiplier));
+        updateEnemyCount(1);
+        if (enemyCount == 0)
+        {
+            menu.endWave();
+            endWave();
+        }
+    }
+
+    public void quitToMenu()
+    {
+        MainCamera.GetComponent<CameraController>().endGame();
+        playingGame = false;
+        mMap.CleanUpWorld();
     }
 
     public void startGame()
@@ -292,10 +364,12 @@ public class Game : MonoBehaviour
         tileIsHighlighted = false;
         startPlaced = false;
         playingGame = true;
+        isDoingWave = false;
+        waveCount = 1;
+        updateMoney(0);
         MainCamera.GetComponent<CameraController>().startGame();
  
         Generate();
-        selectNewTile(0);
     }
 
     public void Generate()

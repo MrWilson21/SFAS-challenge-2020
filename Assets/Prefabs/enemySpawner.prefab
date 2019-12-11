@@ -199,7 +199,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   activeEnemies: []
-  spawnDelay: 0.5
+  spawnDelay: 3
   enemy: {fileID: -8872175558962971421, guid: 84493eaa65d75074ca2c6e2d8a90ff9a, type: 3}
 --- !u!1 &8745411174313702070
 GameObject:

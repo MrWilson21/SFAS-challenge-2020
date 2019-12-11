@@ -4,13 +4,18 @@ using UnityEngine;
 
 public class WaveSpawner : MonoBehaviour
 {
-    [SerializeField] private List<int> enemyCount;
     [SerializeField] private List<Enemy> spawnerEnemies;
+    private List<int> enemyCount;
+
+    [SerializeField] private AnimationCurve normalEnemyCountCurve;
+    [SerializeField] private AnimationCurve FastEnemyCountCurve;
+    [SerializeField] private AnimationCurve enemyHealthCurve;
+    [SerializeField] private AnimationCurve spawnRateCurve;
 
     private List<Spawner> spawners;
     private int numberOfActiveSpawners;
     private int maxNumberOfSpawners;
-    private int totalNumberOfEnemies;
+    public int totalNumberOfEnemies { get; set; }
 
     private System.Random pseudoRandom = new System.Random();
 
@@ -18,11 +23,16 @@ public class WaveSpawner : MonoBehaviour
     {
         this.spawners = spawners;
         maxNumberOfSpawners = spawners.Count;
-        numberOfActiveSpawners = 4;
     }
 
-    public void makeWave()
+    public void makeWave(int waveCount)
     {
+        numberOfActiveSpawners = Mathf.Clamp(waveCount / 5, 1, maxNumberOfSpawners);
+
+        enemyCount = new List<int>();
+        enemyCount.Add(Mathf.RoundToInt(normalEnemyCountCurve.Evaluate(waveCount)));
+        enemyCount.Add(Mathf.RoundToInt(FastEnemyCountCurve.Evaluate(waveCount)));
+
         totalNumberOfEnemies = 0;
         foreach(int i in enemyCount)
         {
@@ -53,7 +63,7 @@ public class WaveSpawner : MonoBehaviour
 
         for (int i = 0; i < numberOfActiveSpawners; i++)
         {
-            spawners[i].setWave(enemiesForEachSpawner[i]);
+            spawners[i].setWave(enemiesForEachSpawner[i], enemyHealthCurve.Evaluate(waveCount), spawnRateCurve.Evaluate(waveCount));
         }
     }
 }

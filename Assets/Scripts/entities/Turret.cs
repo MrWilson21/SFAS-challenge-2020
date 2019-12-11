@@ -54,7 +54,7 @@ public class Turret : MonoBehaviour
 
     private void getTarget()
     {
-        if (targetEnemy != null && Vector3.Distance(transform.position, targetEnemy.transform.position) <= range)
+        if (targetEnemy != null && !targetEnemy.isDead && Vector3.Distance(transform.position, targetEnemy.transform.position) <= range)
         {
             Quaternion lookRotation = Quaternion.LookRotation((targetEnemy.transform.position + new Vector3(0, enemyHeight, 0) - barrelLocation).normalized);
             gunBarrel.transform.rotation = Quaternion.RotateTowards(gunBarrel.transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
@@ -71,6 +71,7 @@ public class Turret : MonoBehaviour
                     {
                         targetEnemy = enemy;
                         closestPathLength = enemy.pathLength;
+                        break; //Enemies are already ordered by path length when they are added so we can break early once a target is found
                     }
                 }
             }
@@ -79,8 +80,6 @@ public class Turret : MonoBehaviour
 
     private void shoot()
     {
-        print(bullet);
-        print(bulletSpawnPoint);
         Bullet b = Instantiate(bullet, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
         b.setShot(bulletDamage);
         shootParticles.Play();

@@ -5,6 +5,13 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     [SerializeField] private float SingleNodeMoveTime = 0.5f;
+    [SerializeField] private float baseHp;
+    [SerializeField] private float rewardMultiplier;
+
+    private enemyHealthBar healthBar;
+    private Animator animator;
+
+    private float hp;
 
     public EnvironmentTile CurrentPosition { get; set; }
     public float pathLength { get; set; } = float.MaxValue;
@@ -12,6 +19,18 @@ public class Enemy : MonoBehaviour
     private int stepsLeft;
 
     private Spawner spawner;
+    private Game game;
+
+    public bool isDead { get; set; }
+
+    public void setHealth(float healthMultiplier)
+    {
+        healthBar = GetComponentInChildren<enemyHealthBar>();
+        hp = baseHp * healthMultiplier;
+        healthBar.setMax(hp);
+        healthBar.setValue(hp);
+        healthBar.hide();
+    }
 
     private IEnumerator DoMove(Vector3 position, Vector3 destination)
     {
@@ -65,22 +84,56 @@ public class Enemy : MonoBehaviour
         this.spawner = spawner;
     }
 
+    public void setGame(Game game)
+    {
+        this.game = game;
+        animator = GetComponent<Animator>();
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if(other.CompareTag("house"))
         {
-            die();
+            reachEnd();
         }
     }
 
     private void die()
     {
         spawner.activeEnemies.Remove(this);
+        game.enemyDie(rewardMultiplier);
+        animator.SetBool("isDead", true);
+        healthBar.hide();
+        isDead = true;
+        GetComponent<Collider>().enabled = false;
+        StopAllCoroutines();
+    }
+
+    public void finishDying()
+    {
         Destroy(gameObject);
+    }
+
+    private void reachEnd()
+    {
+        if(!isDead)
+        {
+            game.enemyReachesEnd();
+        }      
     }
 
     public void doDamage(float damage)
     {
-        die();
+        if (!isDead)
+        {
+            hp -= damage;
+            healthBar.setValue(hp);
+            healthBar.show();
+
+            if (hp <= 0)
+            {
+                die();
+            }
+        }    
     }
 }

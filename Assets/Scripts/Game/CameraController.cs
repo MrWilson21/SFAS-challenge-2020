@@ -8,12 +8,25 @@ public class CameraController : MonoBehaviour
     [SerializeField] private Transform cameraPlay;
     private bool isPLaying;
 
-    [SerializeField] private float mainSpeed = 100.0f; //regular speed
-    [SerializeField] private float shiftAdd = 250.0f; //multiplied by how long shift is held.  Basically running
-    [SerializeField] private float maxShift = 1000.0f; //Maximum speed when holding gshift
+    [SerializeField] private float mainSpeed = 100.0f; //regular max speed
+    [SerializeField] private float maxShift = 1000.0f; //Maximum speed when holding shift
+
     [SerializeField] private float camSens = 0.25f; //How sensitive it with mouse
-    private Vector3 lastMouse = new Vector3(255, 255, 255); //kind of in the middle of the screen, rather than at the top (play)
-    private float totalRun = 1.0f;
+    [SerializeField] private float zoomSensScroll;
+    [SerializeField] private float zoomSensMouse;
+    [SerializeField] private float zoomAccelerationFactor;
+    [SerializeField] private float zoomDecelerationLinear;
+    [SerializeField] private float zoomDecelerationStatic;
+    [SerializeField] private float startZoomLevel;
+   
+    [SerializeField] private AnimationCurve xAngleCurve; //To determine the x angle depending on zoom level
+    [SerializeField] private AnimationCurve heightCurve; //To determine the height of the camera depending on zoom level;
+
+    private Vector3 lastMouse = Vector3.zero;
+
+    private float zoomLevel;
+    private float zoomAcceleration;
+    private float zoomSpeed;
 
     // Start is called before the first frame update
     void Start()
@@ -26,45 +39,87 @@ public class CameraController : MonoBehaviour
     {
         if(isPLaying)
         {
-            lastMouse = Input.mousePosition - lastMouse;
-            lastMouse = new Vector3(-lastMouse.y * camSens, lastMouse.x * camSens, 0);
-            lastMouse = new Vector3(transform.eulerAngles.x + lastMouse.x, transform.eulerAngles.y + lastMouse.y, 0);
+            doZoom();
+            doRotate();
+            doTranslate();
 
-            if (Input.GetMouseButton(1))
-            {
-                transform.eulerAngles = lastMouse;
-            }
             lastMouse = Input.mousePosition;
-
-            //Keyboard commands
-            float f = 0.0f;
-            Vector3 p = GetBaseInput();
-            if (Input.GetKey(KeyCode.LeftShift))
-            {
-                totalRun += Time.deltaTime;
-                p = p * totalRun * shiftAdd;
-                p.x = Mathf.Clamp(p.x, -maxShift, maxShift);
-                p.y = Mathf.Clamp(p.y, -maxShift, maxShift);
-                p.z = Mathf.Clamp(p.z, -maxShift, maxShift);
-            }
-            else
-            {
-                totalRun = Mathf.Clamp(totalRun * 0.5f, 1f, 1000f);
-                p = p * mainSpeed;
-            }
-
-            p = p * Time.deltaTime;
-            Vector3 newPosition = transform.position;
-            //If player wants to move on X and Z axis only
-            transform.Translate(p);
-            newPosition.x = transform.position.x;
-            newPosition.z = transform.position.z;
-            transform.position = newPosition;
         }
     }
 
+    void doZoom()
+    {
+        //Increment acceleration by mouse scoll amount and by mouse movement
+        zoomAcceleration += Input.mouseScrollDelta.y * zoomSensScroll;
+        if (Input.GetMouseButton(1))
+        {
+            zoomAcceleration += (Input.mousePosition - lastMouse).y * zoomSensMouse;
+        }
+        //Increment speed by time amount of acceleration and decrement acceleration by the same amount
+        zoomSpeed += Mathf.Clamp(Time.unscaledDeltaTime * zoomAccelerationFactor, 0, Mathf.Abs(zoomAcceleration)) * Mathf.Sign(zoomAcceleration);
+        zoomAcceleration -= Mathf.Clamp(Time.unscaledDeltaTime * zoomAccelerationFactor, 0, Mathf.Abs(zoomAcceleration)) * Mathf.Sign(zoomAcceleration);
+        //Decrement speed gradually
+        if (zoomSpeed > 0)
+        {
+            zoomSpeed -= zoomDecelerationLinear * (zoomSpeed + zoomDecelerationStatic) * Time.unscaledDeltaTime;
+            zoomSpeed = Mathf.Clamp(zoomSpeed, 0, float.MaxValue);
+        }
+        else if (zoomSpeed < 0)
+        {
+            zoomSpeed += zoomDecelerationLinear * (-zoomSpeed + zoomDecelerationStatic) * Time.unscaledDeltaTime;
+            zoomSpeed = Mathf.Clamp(zoomSpeed, float.MinValue, 0);
+        }
+
+        //Increment zoom level by speed amount
+        zoomLevel += zoomSpeed * Time.unscaledDeltaTime;
+        zoomLevel = Mathf.Clamp(zoomLevel, 0, 1);
+    }
+
+    void doRotate()
+    {
+        float xAngle = xAngleCurve.Evaluate(zoomLevel);
+
+        float yAngle = transform.eulerAngles.y;
+        if (Input.GetMouseButton(1))
+        {
+            lastMouse = Input.mousePosition - lastMouse;
+            yAngle = lastMouse.x * camSens;
+            yAngle = transform.eulerAngles.y + yAngle;
+        }
+
+        transform.eulerAngles = new Vector3(xAngle, yAngle);
+    }
+
+    void doTranslate()
+    {
+        Vector3 oldPosition = transform.position;
+        //Move on the local x and z axis
+        transform.Translate(GetBaseInput(), Space.Self);
+
+        //Seperate movement vector and 
+        Vector3 movement = transform.position - oldPosition;
+        //Remove the global y component of movement
+        movement = new Vector3(movement.x, 0, movement.z);
+        //Normalise movement and multiply by speed
+        movement.Normalize();
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            movement *= maxShift * Time.unscaledDeltaTime;
+        }
+        else
+        {
+            movement *= mainSpeed * Time.unscaledDeltaTime;
+        }       
+
+        //Set height of old position and then set transform back to old position
+        oldPosition.y = heightCurve.Evaluate(zoomLevel);
+        transform.position = oldPosition;
+        //Translate by new movement vector on the z/x plain only
+        transform.Translate(movement, Space.World);
+    }
+
     private Vector3 GetBaseInput()
-    { //returns the basic values, if it's 0 than it's not active.
+    { //returns the basic values, if it's 0 then it's not active.
         Vector3 p_Velocity = new Vector3();
         if (Input.GetKey(KeyCode.W))
         {
@@ -94,6 +149,7 @@ public class CameraController : MonoBehaviour
     public void startGame()
     {
         isPLaying = true;
+        zoomLevel = startZoomLevel;
         resetPosition(cameraPlay);
     }
 

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Spawner : MonoBehaviour
 {
+    private Game game;
+
     //Position enemies start at
     public EnvironmentTile spawnPoint { get; set; }
     //Initial target for enemies to go to leave spawn point;
@@ -16,14 +18,22 @@ public class Spawner : MonoBehaviour
     public List<Enemy> activeEnemies;
 
     private List<Enemy> wave;
-    [SerializeField] private float spawnDelay = 1;
+    private float enemyHealthMultiplier;
+    public float spawnDelay { get; set; }
 
     [SerializeField] private Enemy enemy;
 
-    public void setWave(List<Enemy> wave)
+    public void setGame(Game game)
+    {
+        this.game = game;
+    }
+
+    public void setWave(List<Enemy> wave, float healthMultiplier, float spawnDelay)
     {
         StopAllCoroutines();
         this.wave = wave;
+        this.spawnDelay = spawnDelay;
+        enemyHealthMultiplier = healthMultiplier;
         activeEnemies = new List<Enemy>();
         StartCoroutine(doWave());
     }
@@ -44,6 +54,8 @@ public class Spawner : MonoBehaviour
         activeEnemies.Add(e);
 
         e.setSpawner(this);
+        e.setHealth(enemyHealthMultiplier);
+        e.setGame(game);
 
         List<EnvironmentTile> completeRoute = new List<EnvironmentTile>();
         completeRoute.AddRange(route);
