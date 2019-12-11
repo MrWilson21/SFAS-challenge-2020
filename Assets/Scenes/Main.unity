@@ -12222,17 +12222,17 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 17
-      inSlope: 113
-      outSlope: 113
+      inSlope: 233
+      outSlope: 233
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
-      value: 130
-      inSlope: 113
-      outSlope: 113
+      value: 250
+      inSlope: 233
+      outSlope: 233
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334
