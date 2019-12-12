@@ -50,7 +50,7 @@ public class CameraController : MonoBehaviour
     void doZoom()
     {
         //Increment acceleration by mouse scoll amount and by mouse movement
-        zoomAcceleration += Input.mouseScrollDelta.y * zoomSensScroll;
+        zoomAcceleration += -Input.mouseScrollDelta.y * zoomSensScroll;
         if (Input.GetMouseButton(1))
         {
             zoomAcceleration += (Input.mousePosition - lastMouse).y * zoomSensMouse;
