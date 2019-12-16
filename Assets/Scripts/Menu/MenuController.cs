@@ -140,6 +140,7 @@ public class MenuController : MonoBehaviour
         float elapsedTime = 0;
         float speed;
         fadeScreen.alpha = startAlpha;
+        fadeScreen.blocksRaycasts = true;
         yield return new WaitForSecondsRealtime(delay);
 
         while (elapsedTime < time)
@@ -154,7 +155,7 @@ public class MenuController : MonoBehaviour
 
         //Ensure position is exact
         fadeScreen.alpha = endAlpha;
-
+        fadeScreen.blocksRaycasts = false;
         callback?.Invoke();
     }
 
@@ -278,9 +279,6 @@ public class MenuController : MonoBehaviour
     {
         void playCallBack()
         {
-            //Game starts after screen fades out
-            setNewMapParameters();
-            game.startGame();
             titleScreeen.gameObject.SetActive(false);
             helpScreen.gameObject.SetActive(false);
             playScreen.gameObject.SetActive(false);
@@ -296,6 +294,10 @@ public class MenuController : MonoBehaviour
             StartCoroutine(lerpMenuItem(doubleSpeedButton, nextWaveOnPosition, nextWaveOffPosition, hudMoveTime));
             StartCoroutine(lerpMenuItem(waveCount, waveCounterOnPosition, waveCounterOffPosition, hudMoveTime));
             StartCoroutine(lerpMenuItem(gameOverScreen, gameOverOnPosition, gameOverOffPosition, hudMoveTime, gameOverDelay));
+
+            //Game starts after screen fades out
+            setNewMapParameters();
+            game.startGame();
 
             StartCoroutine(screenFader(1, 0, fadeTime, delay: 1.0f));
         }

@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3832786430911407632}
   - component: {fileID: 2295407015493181946}
   - component: {fileID: 5637270032296477059}
-  - component: {fileID: 3579757669598477041}
+  - component: {fileID: -4469574047923266162}
   m_Layer: 0
   m_Name: Mortar
   m_TagString: Untagged
@@ -123,7 +123,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mixRatio: 0.5
   includeParent: 0
---- !u!114 &3579757669598477041
+--- !u!114 &-4469574047923266162
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -132,7 +132,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6321828633653950483}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7376139be94d20d40b0f82748c702426, type: 3}
+  m_Script: {fileID: 11500000, guid: db1ff5a02e3eb5940aba16394f9b84f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   gunBarrel: {fileID: 5784128962275818869}

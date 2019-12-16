@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 4716760469978012673}
   - component: {fileID: 7755034590450064363}
   - component: {fileID: 4214838606066432914}
-  - component: {fileID: -4185993625707478816}
+  - component: {fileID: 7269106493850439402}
   m_Layer: 0
   m_Name: turret
   m_TagString: Untagged
@@ -123,7 +123,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mixRatio: 0.5
   includeParent: 0
---- !u!114 &-4185993625707478816
+--- !u!114 &7269106493850439402
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -132,12 +132,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 2593550010483966466}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7376139be94d20d40b0f82748c702426, type: 3}
+  m_Script: {fileID: 11500000, guid: 06aecf474769855438b44d1eb0a1f428, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gunBarrel: {fileID: 5793001391191215715}
-  range: 30
-  rotationSpeed: 1000
+  gunBarrel: {fileID: 5792949974541759361}
+  range: 50
+  rotationSpeed: 600
   bullet: {fileID: 9177913578465112841, guid: 12ea0a574b594264685afffd52fff036, type: 3}
   shootDelay: 0.15
   bulletDamage: 10
@@ -217,9 +217,9 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 7902169751554168175}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &5793001391191215715 stripped
+--- !u!1 &5792949974541759361 stripped
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 4453714334340799244, guid: 7625159eaf860d64da336869090343a9,
+  m_CorrespondingSourceObject: {fileID: 4453660680009180910, guid: 7625159eaf860d64da336869090343a9,
     type: 3}
   m_PrefabInstance: {fileID: 7902169751554168175}
   m_PrefabAsset: {fileID: 0}

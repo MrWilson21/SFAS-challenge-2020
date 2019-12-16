@@ -8,6 +8,7 @@ public class Environment : MonoBehaviour
     [SerializeField] private List<EnvironmentTile> InaccessibleTiles;
     private Vector2Int Size;
     public float AccessiblePercentage;
+    public int costToRemoveObstacles { get; set; }
 
     [Range(0, 1)] public float LandFillPercent;
     [SerializeField] private int numberOfSmoothingIterations;
@@ -391,6 +392,7 @@ public class Environment : MonoBehaviour
             tile.transform.Translate(position, Space.World);
             tile.IsAccessible = isAccessible;
             tile.canBeDestroyed = true;
+            tile.costToRemove = costToRemoveObstacles;
             tile.coordinates = new Vector2Int(x, y);
 
             return tile;
