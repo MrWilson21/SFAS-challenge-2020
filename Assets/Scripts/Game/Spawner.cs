@@ -21,8 +21,6 @@ public class Spawner : MonoBehaviour
     private float enemyHealthMultiplier;
     public float spawnDelay { get; set; }
 
-    [SerializeField] private Enemy enemy;
-
     public void setGame(Game game)
     {
         this.game = game;

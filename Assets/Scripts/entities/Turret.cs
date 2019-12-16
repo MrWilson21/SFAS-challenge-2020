@@ -15,6 +15,7 @@ public class Turret : MonoBehaviour
     private Vector3 barrelLocation;
 
     private List<Spawner> spawners;
+    private Game game;
     private Enemy targetEnemy;
 
     private Transform bulletSpawnPoint;
@@ -33,22 +34,30 @@ public class Turret : MonoBehaviour
         this.spawners = spawners;
     }
 
+    public void setGame(Game game)
+    {
+        this.game = game;
+    }
+
     // Update is called once per frame
     void Update()
     {
-        getTarget();
+        if(!game.gameOver)
+        {
+            getTarget();
 
-        if(timeSinceLastShot >= shootDelay)
-        {
-            if(targetEnemy != null && gunBarrel.transform.rotation.Equals(Quaternion.LookRotation((targetEnemy.transform.position + new Vector3(0, enemyHeight, 0) - barrelLocation).normalized)))
+            if (timeSinceLastShot >= shootDelay)
             {
-                shoot();
-                timeSinceLastShot = 0;
+                if (targetEnemy != null && gunBarrel.transform.rotation.Equals(Quaternion.LookRotation((targetEnemy.transform.position + new Vector3(0, enemyHeight, 0) - barrelLocation).normalized)))
+                {
+                    shoot();
+                    timeSinceLastShot = 0;
+                }
             }
-        }
-        else
-        {
-            timeSinceLastShot += Time.deltaTime;
+            else
+            {
+                timeSinceLastShot += Time.deltaTime;
+            }
         }
     }
 

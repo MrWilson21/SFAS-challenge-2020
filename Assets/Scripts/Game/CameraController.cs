@@ -153,6 +153,11 @@ public class CameraController : MonoBehaviour
         resetPosition(cameraPlay);
     }
 
+    public void loseGame()
+    {
+        isPLaying = false;
+    }
+
     public void endGame()
     {
         isPLaying = false;

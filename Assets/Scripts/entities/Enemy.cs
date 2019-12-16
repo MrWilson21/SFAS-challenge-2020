@@ -136,4 +136,12 @@ public class Enemy : MonoBehaviour
             }
         }    
     }
+
+    public void winGame()
+    {
+        animator.SetBool("hasWon", true);
+        healthBar.hide();
+        GetComponent<Collider>().enabled = false;
+        StopAllCoroutines();
+    }
 }

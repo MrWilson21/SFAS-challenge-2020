@@ -50,6 +50,13 @@ public class MenuController : MonoBehaviour
     [SerializeField] private RectTransform nextWaveOnPosition;
     [SerializeField] private RectTransform waveCounterOffPosition;
     [SerializeField] private RectTransform waveCounterOnPosition;
+
+    [SerializeField] private float gameOverDelay;
+    [SerializeField] private GameObject gameOverCanvas;
+    [SerializeField] private RectTransform gameOverScreen;
+    [SerializeField] private RectTransform gameOverOffPosition;
+    [SerializeField] private RectTransform gameOverOnPosition;
+
     [SerializeField] private float hudMoveTime;
 
     [SerializeField] private Toggle doubleSpeedToggle;
@@ -82,10 +89,18 @@ public class MenuController : MonoBehaviour
         }
     }
 
-    private IEnumerator lerpMenuItem(RectTransform item, RectTransform start, RectTransform destination, float time)
+    private IEnumerator lerpMenuItem(RectTransform item, RectTransform start, RectTransform destination, float time, float delay = 0)
     {
         float elapsedTime = 0;
         float speed;
+
+        while(elapsedTime < delay)
+        {
+            elapsedTime += Time.unscaledDeltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+
+        elapsedTime = 0;
 
         while (elapsedTime < time)
         {
@@ -259,43 +274,6 @@ public class MenuController : MonoBehaviour
         seedText.text = UnityEngine.Random.value.ToString();
     }
 
-    public void resumeGame()
-    {
-        pauseMenu.SetActive(false);
-        doubleSpeed(isDoubleSpeed);
-    }
-
-    public void pauseGame()
-    {
-        if(pauseMenu.activeSelf)
-        {
-            resumeGame();
-        }
-        else
-        {
-            pauseMenu.SetActive(true);
-            Time.timeScale = 0;
-        }
-    }
-
-    public void quitToMenu()
-    {
-        void endCallBack()
-        {
-            //Game starts after screen fades out
-            titleScreeen.gameObject.SetActive(true);
-            helpScreen.gameObject.SetActive(true);
-            playScreen.gameObject.SetActive(true);
-            playHud.gameObject.SetActive(false);
-            game.quitToMenu();
-            resumeGame();
-            backToTitle();
-            previewMap();
-            StartCoroutine(screenFader(1, 0, fadeTime, delay: 1.0f));
-        }
-        StartCoroutine(screenFader(0, 1, fadeTime, endCallBack));
-    }
-
     public void play()
     {
         void playCallBack()
@@ -317,6 +295,8 @@ public class MenuController : MonoBehaviour
             StartCoroutine(lerpMenuItem(nextWaveButton, nextWaveOnPosition, nextWaveOffPosition, hudMoveTime));
             StartCoroutine(lerpMenuItem(doubleSpeedButton, nextWaveOnPosition, nextWaveOffPosition, hudMoveTime));
             StartCoroutine(lerpMenuItem(waveCount, waveCounterOnPosition, waveCounterOffPosition, hudMoveTime));
+            StartCoroutine(lerpMenuItem(gameOverScreen, gameOverOnPosition, gameOverOffPosition, hudMoveTime, gameOverDelay));
+
             StartCoroutine(screenFader(1, 0, fadeTime, delay: 1.0f));
         }
 
@@ -392,5 +372,50 @@ public class MenuController : MonoBehaviour
         {
             Time.timeScale = 1;
         }
+    }
+
+    public void resumeGame()
+    {
+        pauseMenu.SetActive(false);
+        doubleSpeed(isDoubleSpeed);
+    }
+
+    public void pauseGame()
+    {
+        if (pauseMenu.activeSelf)
+        {
+            resumeGame();
+        }
+        else
+        {
+            pauseMenu.SetActive(true);
+            Time.timeScale = 0;
+        }
+    }
+
+    public void quitToMenu()
+    {
+        void endCallBack()
+        {
+            //Game starts after screen fades out
+            titleScreeen.gameObject.SetActive(true);
+            helpScreen.gameObject.SetActive(true);
+            playScreen.gameObject.SetActive(true);
+            playHud.gameObject.SetActive(false);
+            gameOverCanvas.SetActive(false);
+            game.quitToMenu();
+            resumeGame();
+            backToTitle();
+            previewMap();
+            StartCoroutine(screenFader(1, 0, fadeTime, delay: 1.0f));
+        }
+        StartCoroutine(screenFader(0, 1, fadeTime, endCallBack));
+    }
+
+    public void gameOver()
+    {
+        gameOverCanvas.SetActive(true);
+        doubleSpeed(false);
+        StartCoroutine(lerpMenuItem(gameOverScreen, gameOverOffPosition, gameOverOnPosition, hudMoveTime, gameOverDelay));
     }
 }

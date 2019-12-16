@@ -8,6 +8,7 @@ using TMPro;
 public class Game : MonoBehaviour
 {
     [SerializeField] private Camera MainCamera;
+    private CameraController cameraController;
     [SerializeField] private int numberOfEnemySpawners;
     [SerializeField] private AnimationCurve moneyFromEnemiesCurve;
 
@@ -57,7 +58,13 @@ public class Game : MonoBehaviour
     [SerializeField] private TMP_Text nextWaveBonus;
     [SerializeField] private TMP_Text nextWaveCountdown;
 
+    [SerializeField] private int startingHealth;
+    [SerializeField] private int startingMoney;
+
+    private int health;
     private int money;
+
+    public bool gameOver { get; set; }
 
     void Start()
     {
@@ -65,6 +72,7 @@ public class Game : MonoBehaviour
         mMap = GetComponentInChildren<Environment>();
         menu = GetComponent<MenuController>();
         waveSpawner = GetComponent<WaveSpawner>();
+        cameraController = MainCamera.GetComponent<CameraController>();
     }
 
     private void Update()
@@ -142,6 +150,13 @@ public class Game : MonoBehaviour
         moneyText.text = "$" + money;
     }
 
+    private void setHealth(int health)
+    {
+        this.health = health;
+        healthSlider.value = health;
+        healthText.text = health.ToString() + " / " + startingHealth.ToString();
+    }
+
     private void updateEnemyCount(int enemiesToRemove)
     {
         enemyCount -= enemiesToRemove;
@@ -167,6 +182,7 @@ public class Game : MonoBehaviour
                         if(t != null)
                         {
                             t.setSpawners(spawners);
+                            t.setGame(this);
                         }
                         foreach (Spawner spawner in spawners)
                         {
@@ -329,10 +345,31 @@ public class Game : MonoBehaviour
         isDoingWave = false;
     }
 
+    private void loseGame()
+    {
+        cancelTool();
+        gameOver = true;
+        menu.gameOver();
+        cameraController.loseGame();
+
+        foreach (Spawner spawner in spawners)
+        {
+            foreach (Enemy enemy in spawner.activeEnemies)
+            {
+                enemy.winGame();
+            }
+        }
+    }
+
     public void enemyReachesEnd()
     {
         updateEnemyCount(1);
-        if (enemyCount == 0)
+        setHealth(health - 1);
+        if(health == 0)
+        {
+            loseGame();
+        }
+        else if (enemyCount == 0)
         {
             menu.endWave();
             endWave();
@@ -352,7 +389,7 @@ public class Game : MonoBehaviour
 
     public void quitToMenu()
     {
-        MainCamera.GetComponent<CameraController>().endGame();
+        cameraController.endGame();
         playingGame = false;
         mMap.CleanUpWorld();
     }
@@ -366,8 +403,12 @@ public class Game : MonoBehaviour
         playingGame = true;
         isDoingWave = false;
         waveCount = 1;
-        updateMoney(0);
-        MainCamera.GetComponent<CameraController>().startGame();
+        money = 0;
+        updateMoney(startingMoney);
+        healthSlider.maxValue = startingHealth;
+        setHealth(startingHealth);
+        gameOver = false;
+        cameraController.startGame();
  
         Generate();
     }
