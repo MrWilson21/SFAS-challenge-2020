@@ -46,7 +46,7 @@ public class MortarShell : MonoBehaviour
         GetComponent<Collider>().enabled = true;
         detonated = true;
         bulletMesh.SetActive(false);
-        explodeParticles.Play();
+        Instantiate(explodeParticles, transform.position, Quaternion.identity, transform);
         Destroy(gameObject, lifeTimeAfterDetonation);
     }
 

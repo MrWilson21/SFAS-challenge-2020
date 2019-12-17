@@ -34,7 +34,7 @@ public class MachineGun : Turret
 
     protected override bool isInRange(Enemy enemy)
     {
-        return Vector3.Distance(transform.position, enemy.transform.position) <= range;
+        return Vector3.Distance(barrelLocation, enemy.transform.position) <= range;
     }
 
     protected override void aimTowardsTarget()

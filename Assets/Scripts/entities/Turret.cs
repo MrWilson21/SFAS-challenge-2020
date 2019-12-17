@@ -5,16 +5,22 @@ using UnityEngine;
 public abstract class Turret : MonoBehaviour
 {
     [SerializeField] private float shootDelay;
+    [SerializeField] private float retargetDelay;
     private float timeSinceLastShot = 0;
 
     private List<Spawner> spawners;
     private Game game;
+
+    public EnvironmentTile turretUpgrade;
+    public int upgradeCost;
+
     protected Enemy targetEnemy;
 
 
     public void setSpawners(List<Spawner> spawners)
     {
         this.spawners = spawners;
+        StartCoroutine(getTarget());
     }
 
     public void setGame(Game game)
@@ -26,11 +32,14 @@ public abstract class Turret : MonoBehaviour
     {
         if(!game.gameOver)
         {
-            getTarget();
+            if (targetEnemy != null && !targetEnemy.isDead && isInRange(targetEnemy))
+            {
+                aimTowardsTarget();
+            }
 
             if (timeSinceLastShot >= shootDelay)
             {
-                if (targetEnemy != null && readyToShoot())
+                if (targetEnemy != null && !targetEnemy.isDead && readyToShoot())
                 {
                     shoot();
                     timeSinceLastShot = 0;
@@ -43,13 +52,9 @@ public abstract class Turret : MonoBehaviour
         }
     }
 
-    private void getTarget()
+    private IEnumerator getTarget()
     {
-        if (targetEnemy != null && !targetEnemy.isDead && isInRange(targetEnemy))
-        {
-            aimTowardsTarget();
-        }
-        else
+        while(true)
         {
             float closestPathLength = float.MaxValue;
 
@@ -65,7 +70,9 @@ public abstract class Turret : MonoBehaviour
                     }
                 }
             }
-        }
+
+            yield return new WaitForSeconds(retargetDelay);
+        }     
     }
 
     protected abstract bool isInRange(Enemy enemy);

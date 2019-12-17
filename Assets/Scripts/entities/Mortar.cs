@@ -39,7 +39,7 @@ public class Mortar : Turret
 
     protected override bool isInRange(Enemy enemy)
     {
-        float distance = Vector3.Distance(transform.position, enemy.transform.position);
+        float distance = Vector3.Distance(barrelLocation, enemy.transform.position);
         return distance <= maxRange && distance >= minRange;
     }
 
@@ -66,11 +66,12 @@ public class Mortar : Turret
         return gunBarrel.transform.rotation.Equals(targetRotation);
     }
 
-    // Solve firing angles for a ballistic projectile with speed and gravity to hit a fixed position.
-    // return true if angle found, false if not
-    // set angle to angle found if one exists
     private bool solveShootAngle(Vector3 target, out Vector3 angle)
     {
+        // Solve firing angles for a ballistic projectile with speed and gravity to hit a fixed position.
+        // return true if angle found, false if not
+        // set angle to angle found if one exists
+
         // Derivation
         //   (1) x = v*t*cos O
         //   (2) y = v*t*sin O - .5*g*t^2

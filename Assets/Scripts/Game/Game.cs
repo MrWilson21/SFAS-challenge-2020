@@ -33,6 +33,7 @@ public class Game : MonoBehaviour
 
     private bool isUsingPlaceTool = false;
     private bool isUsingDestroyTool = false;
+    private bool isUsingUpgradeTool = false;
     private bool tileIsHighlighted = false;
     private bool startPlaced = false;
 
@@ -90,6 +91,9 @@ public class Game : MonoBehaviour
     [SerializeField] private Message messagePrefab;
 
     [SerializeField] private TMP_Text gameOverText;
+
+    private List<Turret> turrets;
+    private bool isShowingRanges;
 
     private int health;
     private int money;
@@ -150,6 +154,10 @@ public class Game : MonoBehaviour
         else if (isUsingDestroyTool && tileIsHighlighted)
         {
             useDestroyTool();
+        }
+        else if(isUsingUpgradeTool && tileIsHighlighted)
+        {
+            useUpgradeTool();
         }
 
         if (Input.GetKeyDown(KeyCode.C))
@@ -244,68 +252,68 @@ public class Game : MonoBehaviour
 
     private void usePlaceTool()
     {
-        if (tileIsHighlighted)
+        Vector3 pos = MainCamera.ScreenToViewportPoint(Input.mousePosition);
+        pos.x = (pos.x - 0.5f) * hudCanvas.sizeDelta.x;
+        pos.y = (pos.y - 0.5f) * hudCanvas.sizeDelta.y;
+        rotateIcon.localPosition = pos;
+        rotateIcon.gameObject.SetActive(true);
+
+        objectToPlace.SetActive(true);
+        objectToPlace.transform.position = currentTile.Position;
+        if (currentTile.IsAccessible && currentTile.canBeDestroyed)
         {
-            Vector3 pos = MainCamera.ScreenToViewportPoint(Input.mousePosition);
-            pos.x = (pos.x - 0.5f) * hudCanvas.sizeDelta.x;
-            pos.y = (pos.y - 0.5f) * hudCanvas.sizeDelta.y;
-            rotateIcon.localPosition = pos;
-            rotateIcon.gameObject.SetActive(true);
-
-            objectToPlace.SetActive(true);
-            objectToPlace.transform.position = currentTile.Position;
-            if (currentTile.IsAccessible && currentTile.canBeDestroyed)
+            objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.green);
+            Turret turret = tilePrefab.GetComponentInChildren<Turret>();
+            int turretCost = 0;
+            if (turret != null)
             {
-                objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.green);
-                Turret turret = tilePrefab.GetComponentInChildren<Turret>();
-                int turretCost = 0;
-                if (turret != null)
-                {
-                    turretCost = getTurretCost(tilePrefab);
-                    setBuyText(turretCost);
-                }
+                turretCost = getTurretCost(tilePrefab);
+                setBuyText(turretCost);
+            }
 
-                if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0))
+            {
+                if(turretCost <= money)
                 {
-                    if(turretCost <= money)
+                    currentTile = mMap.swapTile(currentTile, tilePrefab, true, false);
+                    currentTile.transform.GetChild(0).transform.Rotate(new Vector3(0, 1, 0), 90 * tileRotation);
+
+                    if (mMap.checkIfHouseAccesible())
                     {
-                        currentTile = mMap.swapTile(currentTile, tilePrefab, true, false);
-                        currentTile.transform.GetChild(0).transform.Rotate(new Vector3(0, 1, 0), 90 * tileRotation);
+                        turret = currentTile.GetComponentInChildren<Turret>();
 
-                        if (mMap.checkIfHouseAccesible())
+                        if (turret != null)
                         {
-                            turret = currentTile.GetComponentInChildren<Turret>();
+                            turret.setSpawners(spawners);
+                            turret.setGame(this);
 
-                            if (turret != null)
-                            {
-                                turret.setSpawners(spawners);
-                                turret.setGame(this);
+                            int cost = getTurretCost(currentTile);
+                            buyItem(cost);
+                            incrementTurretCost(currentTile, 1);
 
-                                int cost = getTurretCost(currentTile);
-                                buyItem(cost);
-                                incrementTurretCost(currentTile, 1);
-                            }
-                            foreach (Spawner spawner in spawners)
-                            {
-                                spawner.route = mMap.Solve(spawner.spawnExitPoint, mMap.houseEntrance);
-                            }
+                            turrets.Add(turret);
+                            showRange(turret, isShowingRanges);
                         }
-                        else
+                        foreach (Spawner spawner in spawners)
                         {
-                            sendMessage("Can't block path");
-                            mMap.clearTile(currentTile);
+                            spawner.route = mMap.Solve(spawner.spawnExitPoint, mMap.houseEntrance);
                         }
                     }
                     else
                     {
-                        sendMessage("Can't afford");
-                    }                  
+                        sendMessage("Can't block path");
+                        mMap.clearTile(currentTile);
+                    }
                 }
+                else
+                {
+                    sendMessage("Can't afford");
+                }                  
             }
-            else
-            {
-                objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.red);
-            }
+        }
+        else
+        {
+            objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.red);
         }
     }
 
@@ -331,6 +339,12 @@ public class Game : MonoBehaviour
 
                     incrementTurretCost(currentTile, -1);
 
+                    Turret turret = currentTile.GetComponentInChildren<Turret>();
+                    if(turret != null)
+                    {
+                        turrets.Remove(turret);
+                    }
+
                     foreach (Spawner spawner in spawners)
                     {
                         spawner.route = mMap.Solve(spawner.spawnExitPoint, mMap.houseEntrance);
@@ -340,6 +354,50 @@ public class Game : MonoBehaviour
                 {
                     sendMessage("Can't afford");
                 }
+            }
+        }
+    }
+
+    private void useUpgradeTool()
+    {
+        Vector3 pos = MainCamera.ScreenToViewportPoint(Input.mousePosition);
+        pos.x = (pos.x - 0.5f) * hudCanvas.sizeDelta.x;
+        pos.y = (pos.y - 0.5f) * hudCanvas.sizeDelta.y;
+        destroyIcon.localPosition = pos;
+        destroyIcon.gameObject.SetActive(true);
+
+        Turret turret = currentTile.GetComponent<Turret>();
+
+        if(turret != null && turret.turretUpgrade != null)
+        {
+            if(turret.turretUpgrade != null)
+            {
+                currentTile.GetComponent<ColorSwapper>().swapColour(Color.green);
+                int cost = turret.upgradeCost;
+                setBuyText(cost);
+                if (Input.GetMouseButtonDown(0))
+                {
+                    if (cost <= money)
+                    {
+                        buyItem(cost);
+                        turrets.Remove(turret);
+                        currentTile = mMap.swapTile(currentTile, turret.turretUpgrade, true, false);
+
+                        turret = currentTile.GetComponent<Turret>();
+                        turret.setSpawners(spawners);
+                        turret.setGame(this);
+                        turrets.Add(turret);
+                        showRange(turret, isShowingRanges);
+                    }
+                    else
+                    {
+                        sendMessage("Can't afford");
+                    }
+                }
+            }
+            else if (Input.GetMouseButtonDown(0))
+            {
+                sendMessage("Max level");
             }
         }
     }
@@ -488,6 +546,7 @@ public class Game : MonoBehaviour
     {
         isUsingPlaceTool = false;
         isUsingDestroyTool = false;
+        isUsingUpgradeTool = false;
         cancelToolButton.gameObject.SetActive(false);
     }
 
@@ -495,7 +554,42 @@ public class Game : MonoBehaviour
     {
         isUsingPlaceTool = false;
         isUsingDestroyTool = true;
+        isUsingUpgradeTool = false;
         cancelToolButton.gameObject.SetActive(true);
+    }
+
+    public void upgradeTool()
+    {
+        isUsingPlaceTool = false;
+        isUsingDestroyTool = false;
+        isUsingUpgradeTool = true;
+    }
+
+    public void showRanges()
+    {
+        isShowingRanges = !isShowingRanges;
+        foreach (Turret turret in turrets)
+        {
+            showRange(turret, isShowingRanges);
+        }
+    }
+
+    private void showRange(Turret turret, bool show)
+    {
+        if(show)
+        {
+            foreach (RangeCircle range in turret.GetComponentsInChildren<RangeCircle>())
+            {
+                range.showRadius();
+            }
+        }
+        else
+        {
+            foreach (RangeCircle range in turret.GetComponentsInChildren<RangeCircle>())
+            {
+                range.hideRadius();
+            }
+        }
     }
 
     public void selectNewTile(int tileIndex)
@@ -543,7 +637,7 @@ public class Game : MonoBehaviour
         gameOver = true;
         menu.gameOver();
         cameraController.loseGame();
-        gameOverText.text = "Waves survived: " + waveCount.ToString();
+        gameOverText.text = "Waves survived: " + (waveCount-1).ToString();
 
         foreach (Spawner spawner in spawners)
         {
@@ -592,6 +686,7 @@ public class Game : MonoBehaviour
         //Set game variables to starting values
         isUsingPlaceTool = false;
         isUsingDestroyTool = false;
+        isUsingUpgradeTool = false;
         tileIsHighlighted = false;
         startPlaced = false;
         playingGame = true;
@@ -610,6 +705,8 @@ public class Game : MonoBehaviour
         mortarCost = mortarBaseCost;
         machineGunCostText.text = "$" + machineGunCost.ToString();
         mortarCostText.text = "$" + mortarCost.ToString();
+        isShowingRanges = false;
+        turrets = new List<Turret>();
 
         Generate();
     }

@@ -410,7 +410,7 @@ public class MenuController : MonoBehaviour
             backToTitle();
             previewMap();
             StartCoroutine(screenFader(1, 0, fadeTime, delay: 1.0f));
-        }
+        }       
         StartCoroutine(screenFader(0, 1, fadeTime, endCallBack));
     }
 

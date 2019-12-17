@@ -12,13 +12,18 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float maxShift = 1000.0f; //Maximum speed when holding shift
 
     [SerializeField] private float camSens = 0.25f; //How sensitive it with mouse
-    [SerializeField] private float zoomSensScroll;
-    [SerializeField] private float zoomSensMouse;
+    [SerializeField] private float zoomSens;
     [SerializeField] private float zoomAccelerationFactor;
     [SerializeField] private float zoomDecelerationLinear;
     [SerializeField] private float zoomDecelerationStatic;
     [SerializeField] private float startZoomLevel;
-   
+
+    [SerializeField] private float xSpinSens;
+    [SerializeField] private float xAccelerationFactor;
+    [SerializeField] private float xDecelerationLinear;
+    [SerializeField] private float xDecelerationStatic;
+    [SerializeField] private float startXSpinLevel;
+
     [SerializeField] private AnimationCurve xAngleCurve; //To determine the x angle depending on zoom level
     [SerializeField] private AnimationCurve heightCurve; //To determine the height of the camera depending on zoom level;
 
@@ -27,6 +32,10 @@ public class CameraController : MonoBehaviour
     private float zoomLevel;
     private float zoomAcceleration;
     private float zoomSpeed;
+
+    private float xSpinLevel;
+    private float xSpinAcceleration;
+    private float xSpinSpeed;
 
     // Start is called before the first frame update
     void Start()
@@ -49,12 +58,9 @@ public class CameraController : MonoBehaviour
 
     void doZoom()
     {
-        //Increment acceleration by mouse scoll amount and by mouse movement
-        zoomAcceleration += -Input.mouseScrollDelta.y * zoomSensScroll;
-        if (Input.GetMouseButton(1))
-        {
-            zoomAcceleration += (Input.mousePosition - lastMouse).y * zoomSensMouse;
-        }
+        //Increment acceleration by mouse scoll amount
+        zoomAcceleration += -Input.mouseScrollDelta.y * zoomSens;
+
         //Increment speed by time amount of acceleration and decrement acceleration by the same amount
         zoomSpeed += Mathf.Clamp(Time.unscaledDeltaTime * zoomAccelerationFactor, 0, Mathf.Abs(zoomAcceleration)) * Mathf.Sign(zoomAcceleration);
         zoomAcceleration -= Mathf.Clamp(Time.unscaledDeltaTime * zoomAccelerationFactor, 0, Mathf.Abs(zoomAcceleration)) * Mathf.Sign(zoomAcceleration);
@@ -77,7 +83,30 @@ public class CameraController : MonoBehaviour
 
     void doRotate()
     {
-        float xAngle = xAngleCurve.Evaluate(zoomLevel);
+        //Increment acceleration by mouse movement
+        if (Input.GetMouseButton(1))
+        {
+            xSpinAcceleration += (Input.mousePosition - lastMouse).y * xSpinSens;
+        }
+        //Increment speed by time amount of acceleration and decrement acceleration by the same amount
+        xSpinSpeed += Mathf.Clamp(Time.unscaledDeltaTime * xAccelerationFactor, 0, Mathf.Abs(xSpinAcceleration)) * Mathf.Sign(xSpinAcceleration);
+        xSpinAcceleration -= Mathf.Clamp(Time.unscaledDeltaTime * xAccelerationFactor, 0, Mathf.Abs(xSpinAcceleration)) * Mathf.Sign(xSpinAcceleration);
+        //Decrement speed gradually
+        if (xSpinSpeed > 0)
+        {
+            xSpinSpeed -= xDecelerationLinear * (xSpinSpeed + xDecelerationStatic) * Time.unscaledDeltaTime;
+            xSpinSpeed = Mathf.Clamp(xSpinSpeed, 0, float.MaxValue);
+        }
+        else if (xSpinSpeed < 0)
+        {
+            xSpinSpeed += xDecelerationLinear * (-xSpinSpeed + xDecelerationStatic) * Time.unscaledDeltaTime;
+            xSpinSpeed = Mathf.Clamp(xSpinSpeed, float.MinValue, 0);
+        }
+
+        //Increment spin level by speed amount
+        xSpinLevel += xSpinSpeed * Time.unscaledDeltaTime;
+        xSpinLevel = Mathf.Clamp(xSpinLevel, 0, 1);
+        float xAngle = xAngleCurve.Evaluate(xSpinLevel);
 
         float yAngle = transform.eulerAngles.y;
         if (Input.GetMouseButton(1))
@@ -150,6 +179,7 @@ public class CameraController : MonoBehaviour
     {
         isPLaying = true;
         zoomLevel = startZoomLevel;
+        xSpinLevel = startXSpinLevel;
         resetPosition(cameraPlay);
     }
 
