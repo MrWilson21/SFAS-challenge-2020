@@ -2,32 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Turret : MonoBehaviour
+public abstract class Turret : MonoBehaviour
 {
-    [SerializeField] private GameObject gunBarrel;
-    [SerializeField] private float range;
-    [SerializeField] private float rotationSpeed;
-    [SerializeField] private Bullet bullet;
     [SerializeField] private float shootDelay;
-    [SerializeField] private float bulletDamage;
-    [SerializeField] private float enemyHeight;
     private float timeSinceLastShot = 0;
-    private Vector3 barrelLocation;
 
     private List<Spawner> spawners;
     private Game game;
-    private Enemy targetEnemy;
+    protected Enemy targetEnemy;
 
-    private Transform bulletSpawnPoint;
-    private ParticleSystem shootParticles;
-
-    private void Start()
-    {
-        bulletSpawnPoint = gameObject.transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0);
-        shootParticles = GetComponentInChildren<ParticleSystem>();
-        barrelLocation = transform.GetChild(0).position;
-        barrelLocation.y = bulletSpawnPoint.position.y;
-    }
 
     public void setSpawners(List<Spawner> spawners)
     {
@@ -39,7 +22,6 @@ public class Turret : MonoBehaviour
         this.game = game;
     }
 
-    // Update is called once per frame
     void Update()
     {
         if(!game.gameOver)
@@ -48,7 +30,7 @@ public class Turret : MonoBehaviour
 
             if (timeSinceLastShot >= shootDelay)
             {
-                if (targetEnemy != null && gunBarrel.transform.rotation.Equals(Quaternion.LookRotation((targetEnemy.transform.position + new Vector3(0, enemyHeight, 0) - barrelLocation).normalized)))
+                if (targetEnemy != null && readyToShoot())
                 {
                     shoot();
                     timeSinceLastShot = 0;
@@ -63,10 +45,9 @@ public class Turret : MonoBehaviour
 
     private void getTarget()
     {
-        if (targetEnemy != null && !targetEnemy.isDead && Vector3.Distance(transform.position, targetEnemy.transform.position) <= range)
+        if (targetEnemy != null && !targetEnemy.isDead && isInRange(targetEnemy))
         {
-            Quaternion lookRotation = Quaternion.LookRotation((targetEnemy.transform.position + new Vector3(0, enemyHeight, 0) - barrelLocation).normalized);
-            gunBarrel.transform.rotation = Quaternion.RotateTowards(gunBarrel.transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);
+            aimTowardsTarget();
         }
         else
         {
@@ -76,7 +57,7 @@ public class Turret : MonoBehaviour
             {
                 foreach (Enemy enemy in spawner.activeEnemies)
                 {
-                    if (enemy.pathLength < closestPathLength && Vector3.Distance(transform.position, enemy.transform.position) <= range)
+                    if (enemy.pathLength < closestPathLength && isInRange(enemy))
                     {
                         targetEnemy = enemy;
                         closestPathLength = enemy.pathLength;
@@ -87,10 +68,11 @@ public class Turret : MonoBehaviour
         }
     }
 
-    private void shoot()
-    {
-        Bullet b = Instantiate(bullet, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
-        b.setShot(bulletDamage);
-        shootParticles.Play();
-    }
+    protected abstract bool isInRange(Enemy enemy);
+
+    protected abstract void aimTowardsTarget();
+
+    protected abstract bool readyToShoot();
+
+    protected abstract void shoot();
 }

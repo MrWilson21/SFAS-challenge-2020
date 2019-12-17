@@ -135,13 +135,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db1ff5a02e3eb5940aba16394f9b84f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  shootDelay: 0.3
   gunBarrel: {fileID: 5784128962275818869}
-  range: 30
+  maxRange: 50
+  minRange: 20
   rotationSpeed: 1000
-  bullet: {fileID: 9177913578465112841, guid: 12ea0a574b594264685afffd52fff036, type: 3}
-  shootDelay: 0.15
-  bulletDamage: 10
-  enemyHeight: 1.5
+  shellVelocity: 25
+  mortarShell: {fileID: -3190986673066170210, guid: 3db13a14a05e117478e8705fc4fb0a40,
+    type: 3}
+  shellDamage: 40
 --- !u!1001 &5782831035485638545
 PrefabInstance:
   m_ObjectHideFlags: 0

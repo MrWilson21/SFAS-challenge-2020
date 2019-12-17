@@ -135,13 +135,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06aecf474769855438b44d1eb0a1f428, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  shootDelay: 0.15
   gunBarrel: {fileID: 5792949974541759361}
   range: 50
   rotationSpeed: 600
-  bullet: {fileID: 9177913578465112841, guid: 12ea0a574b594264685afffd52fff036, type: 3}
-  shootDelay: 0.15
-  bulletDamage: 10
   enemyHeight: 1.5
+  bullet: {fileID: 9177913578465112841, guid: 12ea0a574b594264685afffd52fff036, type: 3}
+  bulletDamage: 10
 --- !u!1001 &7902169751554168175
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -153,6 +153,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: turret
+      objectReference: {fileID: 0}
+    - target: {fileID: 4457165108175256808, guid: 7625159eaf860d64da336869090343a9,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4457165108175256808, guid: 7625159eaf860d64da336869090343a9,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 2.647
       objectReference: {fileID: 0}
     - target: {fileID: 4457417424283040254, guid: 7625159eaf860d64da336869090343a9,
         type: 3}

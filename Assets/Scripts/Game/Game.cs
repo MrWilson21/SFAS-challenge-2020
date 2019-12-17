@@ -72,6 +72,7 @@ public class Game : MonoBehaviour
     [SerializeField] private Color buyColour;
 
     [SerializeField] private RectTransform destroyIcon;
+    [SerializeField] private RectTransform rotateIcon;
 
     private int numberOfMachineGuns;
     [SerializeField] private int machineGunBaseCost;
@@ -87,6 +88,8 @@ public class Game : MonoBehaviour
     [SerializeField] private int costToRemoveObstacles;
 
     [SerializeField] private Message messagePrefab;
+
+    [SerializeField] private TMP_Text gameOverText;
 
     private int health;
     private int money;
@@ -131,6 +134,7 @@ public class Game : MonoBehaviour
 
         buyPrice.gameObject.SetActive(false);
         destroyIcon.gameObject.SetActive(false);
+        rotateIcon.gameObject.SetActive(false);
 
         if (isUsingPlaceTool && tileIsHighlighted)
         {
@@ -170,7 +174,7 @@ public class Game : MonoBehaviour
 
     private int calculateNextWaveBonus()
     {
-        float money = Mathf.Log(timeUntilWave, 3);
+        float money = Mathf.Log(Mathf.Clamp(timeUntilWave, 1, float.MaxValue));
         money *= moneyFromEnemiesCurve.Evaluate(waveCount);
         return (int)money;
     }
@@ -242,6 +246,12 @@ public class Game : MonoBehaviour
     {
         if (tileIsHighlighted)
         {
+            Vector3 pos = MainCamera.ScreenToViewportPoint(Input.mousePosition);
+            pos.x = (pos.x - 0.5f) * hudCanvas.sizeDelta.x;
+            pos.y = (pos.y - 0.5f) * hudCanvas.sizeDelta.y;
+            rotateIcon.localPosition = pos;
+            rotateIcon.gameObject.SetActive(true);
+
             objectToPlace.SetActive(true);
             objectToPlace.transform.position = currentTile.Position;
             if (currentTile.IsAccessible && currentTile.canBeDestroyed)
@@ -255,34 +265,41 @@ public class Game : MonoBehaviour
                     setBuyText(turretCost);
                 }
 
-                if (Input.GetMouseButtonDown(0) && turretCost <= money)
+                if (Input.GetMouseButtonDown(0))
                 {
-                    currentTile = mMap.swapTile(currentTile, tilePrefab, true, false);
-                    currentTile.transform.GetChild(0).transform.Rotate(new Vector3(0, 1, 0), 90 * tileRotation);
-
-                    if (mMap.checkIfHouseAccesible())
+                    if(turretCost <= money)
                     {
-                        turret = currentTile.GetComponentInChildren<Turret>();
+                        currentTile = mMap.swapTile(currentTile, tilePrefab, true, false);
+                        currentTile.transform.GetChild(0).transform.Rotate(new Vector3(0, 1, 0), 90 * tileRotation);
 
-                        if (turret != null)
+                        if (mMap.checkIfHouseAccesible())
                         {
-                            turret.setSpawners(spawners);
-                            turret.setGame(this);
+                            turret = currentTile.GetComponentInChildren<Turret>();
 
-                            int cost = getTurretCost(currentTile);
-                            buyItem(cost);
-                            incrementTurretCost(currentTile, 1);
+                            if (turret != null)
+                            {
+                                turret.setSpawners(spawners);
+                                turret.setGame(this);
+
+                                int cost = getTurretCost(currentTile);
+                                buyItem(cost);
+                                incrementTurretCost(currentTile, 1);
+                            }
+                            foreach (Spawner spawner in spawners)
+                            {
+                                spawner.route = mMap.Solve(spawner.spawnExitPoint, mMap.houseEntrance);
+                            }
                         }
-                        foreach (Spawner spawner in spawners)
+                        else
                         {
-                            spawner.route = mMap.Solve(spawner.spawnExitPoint, mMap.houseEntrance);
+                            sendMessage("Can't block path");
+                            mMap.clearTile(currentTile);
                         }
                     }
                     else
                     {
-                        sendMessage("Can't block path");
-                        mMap.clearTile(currentTile);
-                    }
+                        sendMessage("Can't afford");
+                    }                  
                 }
             }
             else
@@ -313,6 +330,11 @@ public class Game : MonoBehaviour
                     mMap.clearTile(currentTile);
 
                     incrementTurretCost(currentTile, -1);
+
+                    foreach (Spawner spawner in spawners)
+                    {
+                        spawner.route = mMap.Solve(spawner.spawnExitPoint, mMap.houseEntrance);
+                    }
                 }
                 else
                 {
@@ -324,6 +346,12 @@ public class Game : MonoBehaviour
 
     private void placeStartPoint()
     {
+        Vector3 pos = MainCamera.ScreenToViewportPoint(Input.mousePosition);
+        pos.x = (pos.x - 0.5f) * hudCanvas.sizeDelta.x;
+        pos.y = (pos.y - 0.5f) * hudCanvas.sizeDelta.y;
+        rotateIcon.localPosition = pos;
+        rotateIcon.gameObject.SetActive(true);
+
         objectToPlace.SetActive(true);
         objectToPlace.transform.position = currentTile.Position;
         if (currentTile.IsAccessible)
@@ -370,6 +398,7 @@ public class Game : MonoBehaviour
                 }
                 else
                 {
+                    sendMessage("Can't place here");
                     mMap.clearTile(currentTile);
                 }
             }
@@ -514,6 +543,7 @@ public class Game : MonoBehaviour
         gameOver = true;
         menu.gameOver();
         cameraController.loseGame();
+        gameOverText.text = "Waves survived: " + waveCount.ToString();
 
         foreach (Spawner spawner in spawners)
         {
