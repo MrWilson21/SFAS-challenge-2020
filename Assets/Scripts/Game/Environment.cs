@@ -44,6 +44,9 @@ public class Environment : MonoBehaviour
     [SerializeField] public string seed;
     [SerializeField] private bool randomSeed;
 
+    [SerializeField] private ParticleSystem buildParticles;
+
+    public bool isFinishedGenerating { get; set; }
 
     private void Awake()
     {
@@ -427,6 +430,8 @@ public class Environment : MonoBehaviour
 
     private void initialSetup()
     {
+        isFinishedGenerating = false;
+
         mAll = new List<EnvironmentTile>();
         mToBeTested = new List<EnvironmentTile>();
 
@@ -729,6 +734,11 @@ public class Environment : MonoBehaviour
             }
         }
         mMap[tileCoord.x][tileCoord.y] = newInstance;
+
+        if(isFinishedGenerating)
+        {
+            Destroy(Instantiate(buildParticles, newInstance.Position, buildParticles.gameObject.transform.rotation, newInstance.transform), 3.0f); //Create build particles that are destroyed after 3 seconds
+        }    
 
         return mMap[tileCoord.x][tileCoord.y];
     }

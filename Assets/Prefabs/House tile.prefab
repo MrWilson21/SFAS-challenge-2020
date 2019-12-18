@@ -29,7 +29,7 @@ GameObject:
   - component: {fileID: 4821699707533421201}
   - component: {fileID: 3030378575083074934}
   m_Layer: 10
-  m_Name: house
+  m_Name: House tile
   m_TagString: house
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -174,6 +174,22 @@ PrefabInstance:
     - target: {fileID: 100002, guid: e7e30e3d93b6ede419ee80f7211fcdc5, type: 3}
       propertyPath: m_Layer
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: e7e30e3d93b6ede419ee80f7211fcdc5, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.95324343
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: e7e30e3d93b6ede419ee80f7211fcdc5, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: e7e30e3d93b6ede419ee80f7211fcdc5, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.30220342
+      objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: e7e30e3d93b6ede419ee80f7211fcdc5, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 144.82
       objectReference: {fileID: 0}
     - target: {fileID: 400002, guid: e7e30e3d93b6ede419ee80f7211fcdc5, type: 3}
       propertyPath: m_LocalPosition.x

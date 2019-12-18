@@ -81,12 +81,42 @@ public class MenuController : MonoBehaviour
     private Environment mMap;
     private Game game;
 
+    private AudioSource audioSource;
+    [SerializeField] private AudioClip menuMusic;
+    [SerializeField] private AudioClip playMusic;
+    [SerializeField] private AudioClip waveMusic;
+    [SerializeField] private AudioSource waveStartSound;
+    [SerializeField] private AudioSource waveEndSound;
+    [SerializeField] private AudioSource buttonPressSound;
+    [SerializeField] private AudioSource loseGameSound;
+    [Range(0,1)][SerializeField] private float musicVolume;
+    [SerializeField] private float musicFadeTime;
+
     private void Update()
     {
         if(Input.GetKeyDown(KeyCode.Escape))
         {
             resumeGame();
         }
+    }
+
+    private IEnumerator musicFader(float startVolume, float endVolume, float time, float delay = 0, Action callBack = null)
+    {
+        float elapsedTime = 0;
+        audioSource.volume = startVolume;
+        yield return new WaitForSecondsRealtime(delay);
+
+        while (elapsedTime < time)
+        {
+            audioSource.volume = Mathf.Lerp(startVolume, endVolume, (elapsedTime / time));
+            elapsedTime += Time.unscaledDeltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+
+        //Ensure volume is exact
+        audioSource.volume = endVolume;
+
+        callBack?.Invoke();
     }
 
     private IEnumerator lerpMenuItem(RectTransform item, RectTransform start, RectTransform destination, float time, float delay = 0)
@@ -175,6 +205,10 @@ public class MenuController : MonoBehaviour
     private void Start()
     {
         StartCoroutine(screenFader(1, 0, fadeTime, delay: 1.0f));
+        audioSource = GetComponent<AudioSource>();
+        audioSource.clip = menuMusic;
+        audioSource.Play();
+        StartCoroutine(musicFader(0, musicVolume, musicFadeTime));
 
         Time.timeScale = 1;
 
@@ -185,6 +219,11 @@ public class MenuController : MonoBehaviour
         changeObstacleFillSlider();
         randomSeed();
         previewMap();
+    }
+
+    public void pressButton()
+    {
+        Destroy(Instantiate(buttonPressSound, transform), 10.0f);
     }
 
     //Methods used by main menu screen
@@ -300,9 +339,13 @@ public class MenuController : MonoBehaviour
             game.startGame();
 
             StartCoroutine(screenFader(1, 0, fadeTime, delay: 1.0f));
+            audioSource.clip = playMusic;
+            audioSource.Play();
+            StartCoroutine(musicFader(0, musicVolume, musicFadeTime));
         }
 
         StartCoroutine(screenFader(0, 1, fadeTime, playCallBack));
+        StartCoroutine(musicFader(musicVolume, 0, musicFadeTime));
     }
 
     private void setNewMapParameters()
@@ -346,6 +389,15 @@ public class MenuController : MonoBehaviour
         StartCoroutine(lerpMenuItem(toolSelector, toolsOnPosition, toolsOffPosition, hudMoveTime));
         StartCoroutine(lerpMenuItem(doubleSpeedButton, nextWaveOffPosition, nextWaveOnPosition, hudMoveTime));
 
+        void musicChangeCallback()
+        {
+            audioSource.clip = waveMusic;
+            audioSource.Play();
+            StartCoroutine(musicFader(0, musicVolume, musicFadeTime));
+        }
+        StartCoroutine(musicFader(musicVolume, 0, musicFadeTime, callBack: musicChangeCallback));
+        Destroy(Instantiate(waveStartSound, transform), 10.0f);
+
         game.startWave(earlyStart);
     }
 
@@ -361,6 +413,16 @@ public class MenuController : MonoBehaviour
 
         isDoubleSpeed = false;
         doubleSpeedToggle.isOn = false;
+
+        void musicChangeCallback()
+        {
+            audioSource.clip = playMusic;
+            audioSource.Play();
+            StartCoroutine(musicFader(0, musicVolume, musicFadeTime));
+        }
+        StartCoroutine(musicFader(musicVolume, 0, musicFadeTime, callBack: musicChangeCallback));
+
+        Destroy(Instantiate(waveEndSound, transform), 10.0f);
     }
 
     public void doubleSpeed(bool isDouble)
@@ -410,8 +472,12 @@ public class MenuController : MonoBehaviour
             backToTitle();
             previewMap();
             StartCoroutine(screenFader(1, 0, fadeTime, delay: 1.0f));
+            audioSource.clip = menuMusic;
+            audioSource.Play();
+            StartCoroutine(musicFader(0, musicVolume, musicFadeTime));
         }       
         StartCoroutine(screenFader(0, 1, fadeTime, endCallBack));
+        StartCoroutine(musicFader(musicVolume, 0, musicFadeTime));
     }
 
     public void gameOver()
@@ -419,5 +485,6 @@ public class MenuController : MonoBehaviour
         gameOverCanvas.SetActive(true);
         doubleSpeed(false);
         StartCoroutine(lerpMenuItem(gameOverScreen, gameOverOffPosition, gameOverOnPosition, hudMoveTime, gameOverDelay));
+        Destroy(Instantiate(loseGameSound, transform), 10.0f);
     }
 }

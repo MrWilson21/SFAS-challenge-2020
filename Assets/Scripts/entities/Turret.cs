@@ -16,10 +16,14 @@ public abstract class Turret : MonoBehaviour
 
     protected Enemy targetEnemy;
 
+    [SerializeField] private AudioClip shootSound;
+    private AudioSource soundSource;
 
     public void setSpawners(List<Spawner> spawners)
     {
         this.spawners = spawners;
+        soundSource = GetComponent<AudioSource>();
+        soundSource.clip = shootSound;
         StartCoroutine(getTarget());
     }
 
@@ -42,6 +46,7 @@ public abstract class Turret : MonoBehaviour
                 if (targetEnemy != null && !targetEnemy.isDead && readyToShoot())
                 {
                     shoot();
+                    soundSource.Play();
                     timeSinceLastShot = 0;
                 }
             }

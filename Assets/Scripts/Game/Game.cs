@@ -11,6 +11,8 @@ public class Game : MonoBehaviour
     private CameraController cameraController;
     [SerializeField] private int numberOfEnemySpawners;
     [SerializeField] private AnimationCurve moneyFromEnemiesCurve;
+    [SerializeField] private float nextWaveBonusMultiplier;
+    [Range(0,1)][SerializeField] private float sellMoneyBackPercent;
 
     private RaycastHit[] mRaycastHits;
     private Environment mMap;
@@ -74,6 +76,7 @@ public class Game : MonoBehaviour
 
     [SerializeField] private RectTransform destroyIcon;
     [SerializeField] private RectTransform rotateIcon;
+    [SerializeField] private RectTransform upgradeIcon;
 
     private int numberOfMachineGuns;
     [SerializeField] private int machineGunBaseCost;
@@ -93,7 +96,7 @@ public class Game : MonoBehaviour
     [SerializeField] private TMP_Text gameOverText;
 
     private List<Turret> turrets;
-    private bool isShowingRanges;
+    private Turret currentTurret;
 
     private int health;
     private int money;
@@ -124,6 +127,10 @@ public class Game : MonoBehaviour
         {
             currentTile.GetComponent<ColorSwapper>().restoreColour();
         }
+        if(currentTurret != null)
+        {
+            showRange(currentTurret, false);
+        }
         tileIsHighlighted = getMouseTile();
 
         if(objectToPlace != null)
@@ -139,25 +146,36 @@ public class Game : MonoBehaviour
         buyPrice.gameObject.SetActive(false);
         destroyIcon.gameObject.SetActive(false);
         rotateIcon.gameObject.SetActive(false);
+        upgradeIcon.gameObject.SetActive(false);
 
-        if (isUsingPlaceTool && tileIsHighlighted)
+        if (tileIsHighlighted)
         {
-            if(!startPlaced)
+            currentTurret = currentTile.GetComponent<Turret>();
+
+            if (isUsingPlaceTool)
             {
-                placeStartPoint();
+                if (!startPlaced)
+                {
+                    placeStartPoint();
+                }
+                else
+                {
+                    usePlaceTool();
+                }
             }
-            else
+            else if (isUsingDestroyTool)
             {
-                usePlaceTool();
+                useDestroyTool();
             }
-        }
-        else if (isUsingDestroyTool && tileIsHighlighted)
-        {
-            useDestroyTool();
-        }
-        else if(isUsingUpgradeTool && tileIsHighlighted)
-        {
-            useUpgradeTool();
+            else if (currentTurret != null)
+            {
+                showRange(currentTurret, true);
+            }
+
+            if (isUsingUpgradeTool)
+            {
+                useUpgradeTool();
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.C))
@@ -183,7 +201,7 @@ public class Game : MonoBehaviour
     private int calculateNextWaveBonus()
     {
         float money = Mathf.Log(Mathf.Clamp(timeUntilWave, 1, float.MaxValue));
-        money *= moneyFromEnemiesCurve.Evaluate(waveCount);
+        money *= moneyFromEnemiesCurve.Evaluate(waveCount) * nextWaveBonusMultiplier;
         return (int)money;
     }
 
@@ -292,7 +310,7 @@ public class Game : MonoBehaviour
                             incrementTurretCost(currentTile, 1);
 
                             turrets.Add(turret);
-                            showRange(turret, isShowingRanges);
+                            showRange(turret, false);
                         }
                         foreach (Spawner spawner in spawners)
                         {
@@ -363,12 +381,12 @@ public class Game : MonoBehaviour
         Vector3 pos = MainCamera.ScreenToViewportPoint(Input.mousePosition);
         pos.x = (pos.x - 0.5f) * hudCanvas.sizeDelta.x;
         pos.y = (pos.y - 0.5f) * hudCanvas.sizeDelta.y;
-        destroyIcon.localPosition = pos;
-        destroyIcon.gameObject.SetActive(true);
+        upgradeIcon.localPosition = pos;
+        upgradeIcon.gameObject.SetActive(true);
 
         Turret turret = currentTile.GetComponent<Turret>();
 
-        if(turret != null && turret.turretUpgrade != null)
+        if(turret != null)
         {
             if(turret.turretUpgrade != null)
             {
@@ -387,7 +405,7 @@ public class Game : MonoBehaviour
                         turret.setSpawners(spawners);
                         turret.setGame(this);
                         turrets.Add(turret);
-                        showRange(turret, isShowingRanges);
+                        showRange(turret, false);
                     }
                     else
                     {
@@ -412,7 +430,7 @@ public class Game : MonoBehaviour
 
         objectToPlace.SetActive(true);
         objectToPlace.transform.position = currentTile.Position;
-        if (currentTile.IsAccessible)
+        if (currentTile.IsAccessible && currentTile.canBeDestroyed)
         {
             if (Input.GetMouseButtonDown(0))
             {
@@ -475,11 +493,11 @@ public class Game : MonoBehaviour
         int cost;
         if (turret is MachineGun)
         {
-            cost = -machineGunCost;
+            cost = (int)(-machineGunCost * sellMoneyBackPercent);
         }
         else if (turret is Mortar)
         {
-            cost = -mortarCost;
+            cost = (int)(-mortarCost * sellMoneyBackPercent);
         }
         else
         {
@@ -563,15 +581,7 @@ public class Game : MonoBehaviour
         isUsingPlaceTool = false;
         isUsingDestroyTool = false;
         isUsingUpgradeTool = true;
-    }
-
-    public void showRanges()
-    {
-        isShowingRanges = !isShowingRanges;
-        foreach (Turret turret in turrets)
-        {
-            showRange(turret, isShowingRanges);
-        }
+        cancelToolButton.gameObject.SetActive(true);
     }
 
     private void showRange(Turret turret, bool show)
@@ -595,6 +605,7 @@ public class Game : MonoBehaviour
     public void selectNewTile(int tileIndex)
     {
         isUsingDestroyTool = false;
+        isUsingUpgradeTool = false;
         isUsingPlaceTool = true;
 
         turretPrefab = turretSelection[tileIndex];
@@ -705,7 +716,6 @@ public class Game : MonoBehaviour
         mortarCost = mortarBaseCost;
         machineGunCostText.text = "$" + machineGunCost.ToString();
         mortarCostText.text = "$" + mortarCost.ToString();
-        isShowingRanges = false;
         turrets = new List<Turret>();
 
         Generate();
@@ -716,6 +726,7 @@ public class Game : MonoBehaviour
         mMap.CleanUpWorld();
         mMap.GenerateWorld();
         spawners = mMap.placeSpawners(numberOfEnemySpawners);
+        mMap.isFinishedGenerating = true;
     }
 
     public void Exit()

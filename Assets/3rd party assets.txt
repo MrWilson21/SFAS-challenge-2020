@@ -1,1 +1,6 @@
 ﻿https://www.meshtint.com/collections/free/products/meshtint-free-boximon-fiery-mega-toon-series
+
+-comment code
+-add sounds
+-add icon to spawners before wave start
+-make ui scale properly

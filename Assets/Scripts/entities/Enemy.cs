@@ -106,6 +106,7 @@ public class Enemy : MonoBehaviour
         healthBar.hide();
         isDead = true;
         GetComponent<Collider>().enabled = false;
+        GetComponent<AudioSource>().Play();
         StopAllCoroutines();
     }
 
