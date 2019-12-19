@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    //Previously known as Character class but renamed as its purpose changed
+    //Ememy will follow its path until it reaches the player base or dies
+
     [SerializeField] private float SingleNodeMoveTime = 0.5f;
     [SerializeField] private float baseHp;
     [SerializeField] private float rewardMultiplier;
@@ -16,7 +19,7 @@ public class Enemy : MonoBehaviour
     public EnvironmentTile CurrentPosition { get; set; }
     public float pathLength { get; set; } = float.MaxValue;
 
-    private int stepsLeft;
+    private int stepsLeft; //Real distance to destination
 
     private Spawner spawner;
     private Game game;
@@ -25,6 +28,7 @@ public class Enemy : MonoBehaviour
 
     public void setHealth(float healthMultiplier)
     {
+        //set up health bar and hide it initialy
         healthBar = GetComponentInChildren<enemyHealthBar>();
         hp = baseHp * healthMultiplier;
         healthBar.setMax(hp);
@@ -59,7 +63,7 @@ public class Enemy : MonoBehaviour
         if (route != null)
         {
             stepsLeft = route.Count;
-            Vector3 position = transform.position; // CurrentPosition.Position;
+            Vector3 position = transform.position;
             for (int count = 0; count < route.Count; ++count)
             {
                 Vector3 next = route[count].Position;
@@ -100,6 +104,7 @@ public class Enemy : MonoBehaviour
 
     private void die()
     {
+        //Set animation to death animation and stop moving
         spawner.activeEnemies.Remove(this);
         game.enemyDie(rewardMultiplier);
         animator.SetBool("isDead", true);
@@ -112,6 +117,7 @@ public class Enemy : MonoBehaviour
 
     public void finishDying()
     {
+        //Destroy on death
         Destroy(gameObject);
     }
 
@@ -125,6 +131,8 @@ public class Enemy : MonoBehaviour
 
     public void doDamage(float damage)
     {
+        //SHow health bar when first damaged
+        //Die when health reaches 0
         if (!isDead)
         {
             hp -= damage;
@@ -140,6 +148,7 @@ public class Enemy : MonoBehaviour
 
     public void winGame()
     {
+        //Change animation and stop moving when player loses game
         animator.SetBool("hasWon", true);
         healthBar.hide();
         GetComponent<Collider>().enabled = false;

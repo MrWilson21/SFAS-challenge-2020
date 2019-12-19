@@ -11,7 +11,7 @@ public class EnvironmentTile : MonoBehaviour
     public float Local { get; set; }
     public bool Visited { get; set; }
     public bool IsAccessible { get; set; }
-    public Vector2Int coordinates { get; set; }
-    public bool canBeDestroyed { get; set; }
-    public int costToRemove { get; set; }
+    public Vector2Int coordinates { get; set; } //x, y coordinates of tile in map
+    public bool canBeDestroyed { get; set; } //Tile can be cleared or swapped
+    public int costToRemove { get; set; } //Cost to clear tile
 }

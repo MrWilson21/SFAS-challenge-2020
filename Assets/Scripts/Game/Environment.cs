@@ -4,14 +4,18 @@ using UnityEngine;
 
 public class Environment : MonoBehaviour
 {
+    //Environment stores all information about tiles, turrets and spawners on the map
+    //Generates each world using cellular automation and marching squares
+    //Does pathfinding for enemy spawners to the player base
+
     [SerializeField] private List<EnvironmentTile> AccessibleTiles;
     [SerializeField] private List<EnvironmentTile> InaccessibleTiles;
     private Vector2Int Size;
     public float AccessiblePercentage;
-    public int costToRemoveObstacles { get; set; }
+    public int costToRemoveObstacles { get; set; } 
 
-    [Range(0, 1)] public float LandFillPercent;
-    [SerializeField] private int numberOfSmoothingIterations;
+    [Range(0, 1)] public float LandFillPercent; //Amount of land to fill when creating initial map
+    [SerializeField] private int numberOfSmoothingIterations; 
     [SerializeField] private int numberOfSmoothingIterationsAfterScaleUp;
 
     private EnvironmentTile[][] mMap;
@@ -37,14 +41,14 @@ public class Environment : MonoBehaviour
 
     private int[,] floorMap;
     [SerializeField] private List<EnvironmentTile> marchingSquareTiles;
-    public Vector2Int initialSize;
-    public int scaleUpFactor;
+    public Vector2Int initialSize; //Initial size of map
+    public int scaleUpFactor; //Amount to scale generated map up by
     [SerializeField] private int borderSize;
     private System.Random pseudoRandom;
     [SerializeField] public string seed;
     [SerializeField] private bool randomSeed;
 
-    [SerializeField] private ParticleSystem buildParticles;
+    [SerializeField] private ParticleSystem buildParticles; //Particles to produce when building new turrets
 
     public bool isFinishedGenerating { get; set; }
 
@@ -121,6 +125,8 @@ public class Environment : MonoBehaviour
         //Second stage of terrain generation
         //Uses cellular automation rules to determine next state of floor map
         //Turns randomised map into smooth islands
+        //If a tile has less than 4 active neighbours then it becomes inactive
+        //If a tile has more than 4 active neighbours then it becomes active
         int[,] newMap = new int[size.x, size.y];
 
         for (int x = 0; x < size.x; x++)
@@ -163,10 +169,6 @@ public class Environment : MonoBehaviour
                         wallCount += map[neighbourX, neighbourY];
                     }
                 }
-                else
-                {
-                    //wallCount++;
-                }
             }
         }
 
@@ -196,6 +198,8 @@ public class Environment : MonoBehaviour
 
     private bool checkIfSpawnPointsLink()
     {
+        //Pathfinds each spawn point to each other to check if they can all access each other
+        //This check is to ensure spawner locations are valid
         if(spawnPoints.Count > 1)
         {
             for(int i = 1; i < spawnPoints.Count; i++)
@@ -212,6 +216,7 @@ public class Environment : MonoBehaviour
 
     public bool checkIfHouseAccesible()
     {
+        //Pathfinds each spawner to the house to ensure all enemies will have a path
         if (spawnPoints.Count > 0)
         {
             for (int i = 0; i < spawnPoints.Count; i++)
@@ -235,12 +240,14 @@ public class Environment : MonoBehaviour
         int emptySideCount = 0;
         List<Spawner> spawners = new List<Spawner>();
 
+        //While there are still spawners to place and there are still available spaces to check
         while(count < numberOfSpawners || emptySideCount == 4)
         {
             EnvironmentTile tile;
             Vector2Int coord;
             Spawner spawner;
 
+            //4 directions
             switch (count % 4)
             {
                 case 0:
@@ -248,18 +255,23 @@ public class Environment : MonoBehaviour
                     {
                         tile = PotentialSpawnPointsLeft[pseudoRandom.Next(0, PotentialSpawnPointsLeft.Count)];
                         PotentialSpawnPointsLeft.Remove(tile);
+                        //If no more potential spaces left then increment empty side count
                         if (PotentialSpawnPointsLeft.Count == 0)
                         {
                             emptySideCount++;
                         }
                         coord = tile.coordinates;
 
+                        //Check if tile is accessible 
                         if (mMap[coord.x - 1][coord.y].IsAccessible && mMap[coord.x - 2][coord.y].IsAccessible)
                         {
+                            //Add spawn point to spawn points
                             spawnPoints.Add(mMap[coord.x - 2][coord.y]);
                             spawner = swapTile(mMap[coord.x - 1][coord.y], enemySpawner, false, false).gameObject.GetComponentInChildren<Spawner>();
+                            //Check if spawn point is valid
                             if (checkIfSpawnPointsLink())
-                            {                           
+                            {         
+                                //If valid then set up spawner route
                                 mMap[coord.x - 1][coord.y].gameObject.transform.GetChild(0).Rotate(new Vector3(0, 1, 0), -90);
                                 spawner.spawnPoint = mMap[coord.x - 1][coord.y];
                                 spawner.spawnExitPoint = mMap[coord.x - 2][coord.y];
@@ -269,6 +281,7 @@ public class Environment : MonoBehaviour
                             }
                             else
                             {
+                                //If not valid then remove spawn point
                                 spawnPoints.Remove(mMap[coord.x - 2][coord.y]);
                                 clearTile(mMap[coord.x - 1][coord.y]);
                             }
@@ -281,18 +294,23 @@ public class Environment : MonoBehaviour
                     {
                         tile = PotentialSpawnPointsRight[pseudoRandom.Next(0, PotentialSpawnPointsRight.Count)];
                         PotentialSpawnPointsRight.Remove(tile);
+                        //If no more potential spaces left then increment empty side count
                         if (PotentialSpawnPointsRight.Count == 0)
                         {
                             emptySideCount++;
                         }
                         coord = tile.coordinates;
 
+                        //Check if tile is accessible 
                         if (mMap[coord.x + 1][coord.y].IsAccessible && mMap[coord.x + 2][coord.y].IsAccessible)
                         {
+                            //Add spawn point to spawn points
                             spawnPoints.Add(mMap[coord.x + 2][coord.y]);
                             spawner = swapTile(mMap[coord.x + 1][coord.y], enemySpawner, false, false).gameObject.GetComponentInChildren<Spawner>();
+                            //Check if spawn point is valid
                             if (checkIfSpawnPointsLink())
                             {
+                                //If valid then set up spawner route
                                 mMap[coord.x + 1][coord.y].gameObject.transform.GetChild(0).Rotate(new Vector3(0, 1, 0), 90);
                                 spawner.spawnPoint = mMap[coord.x + 1][coord.y];
                                 spawner.spawnExitPoint = mMap[coord.x + 2][coord.y];
@@ -302,6 +320,7 @@ public class Environment : MonoBehaviour
                             }
                             else
                             {
+                                //If not valid then remove spawn point
                                 spawnPoints.Remove(mMap[coord.x + 2][coord.y]);
                                 clearTile(mMap[coord.x + 1][coord.y]);
                             }
@@ -314,18 +333,23 @@ public class Environment : MonoBehaviour
                     {
                         tile = PotentialSpawnPointsUp[pseudoRandom.Next(0, PotentialSpawnPointsUp.Count)];
                         PotentialSpawnPointsUp.Remove(tile);
+                        //If no more potential spaces left then increment empty side count
                         if (PotentialSpawnPointsUp.Count == 0)
                         {
                             emptySideCount++;
                         }
                         coord = tile.coordinates;
 
+                        //Check if tile is accessible 
                         if (mMap[coord.x][coord.y + 1].IsAccessible && mMap[coord.x][coord.y + 2].IsAccessible)
                         {
+                            //Add spawn point to spawn points
                             spawnPoints.Add(mMap[coord.x][coord.y + 2]);
                             spawner = swapTile(mMap[coord.x][coord.y + 1], enemySpawner, false, false).gameObject.GetComponentInChildren<Spawner>();
+                            //Check if spawn point is valid
                             if (checkIfSpawnPointsLink())
                             {
+                                //If valid then set up spawner route
                                 spawner.spawnPoint = mMap[coord.x][coord.y + 1];
                                 spawner.spawnExitPoint = mMap[coord.x][coord.y + 2];
                                 spawner.spawnExitPoint.canBeDestroyed = false;
@@ -334,6 +358,7 @@ public class Environment : MonoBehaviour
                             }
                             else
                             {
+                                //If not valid then remove spawn point
                                 spawnPoints.Remove(mMap[coord.x][coord.y + 2]);
                                 clearTile(mMap[coord.x][coord.y + 1]);
                             }
@@ -346,18 +371,23 @@ public class Environment : MonoBehaviour
                     {
                         tile = PotentialSpawnPointsDown[pseudoRandom.Next(0, PotentialSpawnPointsDown.Count)];
                         PotentialSpawnPointsDown.Remove(tile);
-                        if(PotentialSpawnPointsDown.Count == 0)
+                        //If no more potential spaces left then increment empty side count
+                        if (PotentialSpawnPointsDown.Count == 0)
                         {
                             emptySideCount++;
                         }
                         coord = tile.coordinates;
 
+                        //Check if tile is accessible 
                         if (mMap[coord.x][coord.y - 1].IsAccessible && mMap[coord.x][coord.y - 2].IsAccessible)
-                        {                         
+                        {
+                            //Add spawn point to spawn points
                             spawnPoints.Add(mMap[coord.x][coord.y - 2]);
                             spawner = swapTile(mMap[coord.x][coord.y - 1], enemySpawner, false, false).gameObject.GetComponentInChildren<Spawner>();
+                            //Check if spawn point is valid
                             if (checkIfSpawnPointsLink())
                             {
+                                //If valid then set up spawner route
                                 mMap[coord.x][coord.y - 1].gameObject.transform.GetChild(0).Rotate(new Vector3(0, 1, 0), 180);
                                 spawner.spawnPoint = mMap[coord.x][coord.y - 1];
                                 spawner.spawnExitPoint = mMap[coord.x][coord.y - 2];
@@ -367,6 +397,7 @@ public class Environment : MonoBehaviour
                             }
                             else
                             {
+                                //If not valid then remove spawn point
                                 spawnPoints.Remove(mMap[coord.x][coord.y - 2]);
                                 clearTile(mMap[coord.x][coord.y - 1]);
                             }
@@ -385,12 +416,13 @@ public class Environment : MonoBehaviour
         int squareIndex = floorMap[x, y] + floorMap[x + 1, y] * 2 + floorMap[x + 1, y + 1] * 4 + floorMap[x, y + 1] * 8;
         EnvironmentTile tile;
 
+        //If tile is a ground tile 
         if (squareIndex == 15)
         {
+            //Randomly choose accessible tile or inaccessible tile
             bool isAccessible = pseudoRandom.NextDouble() < AccessiblePercentage;
             List<EnvironmentTile> tiles = isAccessible ? AccessibleTiles : InaccessibleTiles;
             EnvironmentTile prefab = tiles[pseudoRandom.Next(0, tiles.Count)];
-            //tile = Instantiate(prefab, position, Quaternion.identity, transform);
             tile = Instantiate(prefab, transform);
             tile.transform.Translate(position, Space.World);
             tile.IsAccessible = isAccessible;
@@ -401,6 +433,7 @@ public class Environment : MonoBehaviour
             return tile;
         }
 
+        //If tile is not a ground tile 
         tile = Instantiate(marchingSquareTiles[squareIndex], transform);
         tile.IsAccessible = false;
         tile.canBeDestroyed = false;
@@ -430,6 +463,7 @@ public class Environment : MonoBehaviour
 
     private void initialSetup()
     {
+        //Set up map variables
         isFinishedGenerating = false;
 
         mAll = new List<EnvironmentTile>();
@@ -450,13 +484,17 @@ public class Environment : MonoBehaviour
     // and the specified accessible percentage
         initialSetup();
 
+        //Get new seed
         if(randomSeed)
         {
             seed = Random.value.ToString();
         }
         pseudoRandom = new System.Random(seed.GetHashCode());
+
+        //Set up size
         Size = initialSize * scaleUpFactor;
 
+        //Do cellular automation part of map generation
         floorMap = new int[Size.x + 1, Size.y + 1];
         randomFillMap(ref floorMap);
         for(int i = 0; i < numberOfSmoothingIterations; i++)
@@ -464,6 +502,7 @@ public class Environment : MonoBehaviour
             smoothMap(ref floorMap, ref initialSize);
         }
 
+        //Scale map up
         scaleUpMap();
         for (int i = 0; i < numberOfSmoothingIterationsAfterScaleUp; i++)
         {
@@ -480,6 +519,10 @@ public class Environment : MonoBehaviour
         Vector3 position = new Vector3( -(halfWidth * TileSize), 0.0f, -(halfHeight * TileSize));
         bool start = true;
 
+        //Do marching squares part of map generation
+        //Iterate over each "square" of the map to find its tile
+        //Each square is defined as the midpoint between 4 points on the floor map
+        //Use each of the 4 points to determine the shape of the tile
         for ( int x = 0; x < Size.x; ++x)
         {
             mMap[x] = new EnvironmentTile[Size.y];
@@ -707,10 +750,11 @@ public class Environment : MonoBehaviour
     public EnvironmentTile swapTile(EnvironmentTile tileToSwap, EnvironmentTile newTile, bool canBeDestoyed, bool isAccessible)
     {
         //Swap an environment tile with a new one
-        //New tile is instantiated and 
+        //New tile is instantiated and its connections are calculated
         Vector2Int tileCoord = tileToSwap.coordinates;
         Vector3 position = tileToSwap.Position;
 
+        //Create new tile
         EnvironmentTile newInstance = Instantiate(newTile, tileToSwap.gameObject.transform.position, newTile.gameObject.transform.rotation, transform);
         newInstance.gameObject.name = tileToSwap.gameObject.name;
         newInstance.IsAccessible = isAccessible;
@@ -719,9 +763,11 @@ public class Environment : MonoBehaviour
         newInstance.Connections = tileToSwap.Connections;
         newInstance.coordinates = tileToSwap.coordinates;
 
+        //Remove old tile and replace
         mAll.Remove(tileToSwap);
         mAll.Add(newInstance);
 
+        //Get new connections
         Destroy(tileToSwap.gameObject);
         for(int i = 0; i < tileToSwap.Connections.Count; i++)
         {
@@ -735,9 +781,10 @@ public class Environment : MonoBehaviour
         }
         mMap[tileCoord.x][tileCoord.y] = newInstance;
 
-        if(isFinishedGenerating)
+        //Create build particles that are destroyed after 3 seconds
+        if (isFinishedGenerating)
         {
-            Destroy(Instantiate(buildParticles, newInstance.Position, buildParticles.gameObject.transform.rotation, newInstance.transform), 3.0f); //Create build particles that are destroyed after 3 seconds
+            Destroy(Instantiate(buildParticles, newInstance.Position, buildParticles.gameObject.transform.rotation, newInstance.transform), 3.0f);
         }    
 
         return mMap[tileCoord.x][tileCoord.y];

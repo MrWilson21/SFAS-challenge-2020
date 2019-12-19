@@ -12,7 +12,7 @@ public class Mortar : Turret
     [SerializeField] protected MortarShell mortarShell;
     [SerializeField] protected float shellDamage;
 
-    private Vector3 barrelLocation;
+    private Vector3 barrelLocation; //Location of the middle of the turret at the height of the gun barrel
     private Transform bulletSpawnPoint;
     private ParticleSystem shootParticles;
 
@@ -32,6 +32,7 @@ public class Mortar : Turret
 
     override protected void shoot()
     {
+        //Shoot shell at an arc
         MortarShell shell = Instantiate(mortarShell, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
         shell.setShot(shellDamage, targetVelocity, shellDetonateHeight);
         shootParticles.Play();
@@ -39,30 +40,37 @@ public class Mortar : Turret
 
     protected override bool isInRange(Enemy enemy)
     {
+        //Check if enemy within min and max range
         float distance = Vector3.Distance(barrelLocation, enemy.transform.position);
         return distance <= maxRange && distance >= minRange;
     }
 
     protected override void aimTowardsTarget()
     {
-        //Aim gun towards enemy first
-        Quaternion lookRotation = Quaternion.LookRotation((targetEnemy.transform.position - barrelLocation).normalized);
-        Quaternion oldRotation = gunBarrel.transform.rotation;
+        //Gradually rotate gun barrel towards target enemy
 
+        Quaternion lookRotation = Quaternion.LookRotation((targetEnemy.transform.position - barrelLocation).normalized);
+        Quaternion oldRotation = gunBarrel.transform.rotation; //Save current rotation
+
+        //Aim gun towards enemy first
         gunBarrel.transform.rotation = lookRotation;
+        //Solve the x rotation angle needed to shoot at an arc
         if (solveShootAngle(targetEnemy.transform.position, out targetVelocity))
         {
+            //Gradually rotate gun barrel towards target enemy
             targetRotation = Quaternion.LookRotation(targetVelocity.normalized);
             gunBarrel.transform.rotation = Quaternion.RotateTowards(oldRotation, targetRotation, rotationSpeed * Time.deltaTime);
         }
         else
         {
+            //Don't move gun barrel if no target angle found
             gunBarrel.transform.rotation = oldRotation;
         }
     }
 
     protected override bool readyToShoot()
     {
+        //Can shoot when gun rotation is the same as the target rotation
         return gunBarrel.transform.rotation.Equals(targetRotation);
     }
 

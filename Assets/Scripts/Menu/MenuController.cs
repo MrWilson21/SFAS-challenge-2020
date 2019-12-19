@@ -7,6 +7,9 @@ using System;
 
 public class MenuController : MonoBehaviour
 {
+    //Controls the flow of the menu system and handles the pausing and speeding up of gameplay
+    //Moves ui elements in and out of view as they are needed
+
     [SerializeField] private CanvasGroup fadeScreen;
     [SerializeField] private CanvasGroup exitConfirm;
     [SerializeField] private CanvasGroup titleScreeen;
@@ -65,16 +68,16 @@ public class MenuController : MonoBehaviour
 
     [SerializeField] private GameObject pauseMenu;
 
-    private Vector3Int selectedLevelSize;
-    private Vector2 selectedLevelGroundFillBounds;
-    private Vector2 selectedLevelObstacleFillBounds;
-    private float selectedLevelPreviewCameraSize;
+    private Vector3Int selectedLevelSize; //width, height and scale up factor of currently selected world size
+    private Vector2 selectedLevelGroundFillBounds; //Minimum and maximum ground fill rate of currently selected world size
+    private Vector2 selectedLevelObstacleFillBounds; //Minimum and maximum obstacle fill rate of currently selected world size
+    private float selectedLevelPreviewCameraSize; //Size of camera when capturing preview image
     private int selectedLevelScaleFactor;
 
     private float obstacleFillRate;
     private float groundFillRate;
 
-    private Coroutine currentLerpRoutine;
+    private Coroutine currentLerpRoutine; //Current routine should be stopped before starting a new one
 
     [SerializeField] private Camera previewCamera;
 
@@ -102,6 +105,8 @@ public class MenuController : MonoBehaviour
 
     private IEnumerator musicFader(float startVolume, float endVolume, float time, float delay = 0, Action callBack = null)
     {
+        //Fades music in and out again
+        //callback function used to do action after fading
         float elapsedTime = 0;
         audioSource.volume = startVolume;
         yield return new WaitForSecondsRealtime(delay);
@@ -121,6 +126,7 @@ public class MenuController : MonoBehaviour
 
     private IEnumerator lerpMenuItem(RectTransform item, RectTransform start, RectTransform destination, float time, float delay = 0)
     {
+        //Smoothly moves UI item to a new location
         float elapsedTime = 0;
         float speed;
 
@@ -148,6 +154,7 @@ public class MenuController : MonoBehaviour
 
     private IEnumerator lerpToPosition(Vector3 start, Vector3 destination, float time)
     {
+        //Smoothly moves whole menu to a new location to change screens
         float elapsedTime = 0;
         float speed;
 
@@ -167,6 +174,8 @@ public class MenuController : MonoBehaviour
 
     private IEnumerator screenFader(float startAlpha, float endAlpha, float time, Action callback = null, float delay = 0)
     {
+        //Fade screen to a white background 
+        //callback function used to do action after fading
         float elapsedTime = 0;
         float speed;
         fadeScreen.alpha = startAlpha;
@@ -183,7 +192,7 @@ public class MenuController : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
 
-        //Ensure position is exact
+        //Ensure fade is exact
         fadeScreen.alpha = endAlpha;
         fadeScreen.blocksRaycasts = false;
         callback?.Invoke();
@@ -191,11 +200,13 @@ public class MenuController : MonoBehaviour
 
     public void backToTitle()
     {
+        //Moves to title screen
         helpScreen.interactable = false;
         playScreen.interactable = false;
         titleScreeen.interactable = true;
         previewCamera.enabled = false;
-        if(currentLerpRoutine != null)
+        //End current lerp routine before starting new one
+        if (currentLerpRoutine != null)
         {
             StopCoroutine(currentLerpRoutine);
         }
@@ -204,6 +215,7 @@ public class MenuController : MonoBehaviour
 
     private void Start()
     {
+        //Get component values and set up initial preview map
         StartCoroutine(screenFader(1, 0, fadeTime, delay: 1.0f));
         audioSource = GetComponent<AudioSource>();
         audioSource.clip = menuMusic;
@@ -223,6 +235,7 @@ public class MenuController : MonoBehaviour
 
     public void pressButton()
     {
+        //Create button press sound
         Destroy(Instantiate(buttonPressSound, transform), 10.0f);
     }
 
@@ -230,6 +243,7 @@ public class MenuController : MonoBehaviour
 
     public void openExitConfirmMenu()
     {
+        //Opens menu to exit game 
         titleScreeen.interactable = false;
         exitConfirm.interactable = true;
         exitConfirm.blocksRaycasts = true;
@@ -238,6 +252,7 @@ public class MenuController : MonoBehaviour
 
     public void cancelExit()
     {
+        //Closes menu to exit game
         titleScreeen.interactable = true;
         exitConfirm.interactable = false;
         exitConfirm.blocksRaycasts = false;
@@ -246,14 +261,17 @@ public class MenuController : MonoBehaviour
 
     public void exitGame()
     {
+        //Ends application
         Application.Quit();
     }
 
-    public void playButton()
+    public void goToPlayScreen()
     {
+        //Moves to play screen
         playScreen.interactable = true;
         titleScreeen.interactable = false;
         previewCamera.enabled = true;
+        //End current lerp routine before starting new one
         if (currentLerpRoutine != null)
         {
             StopCoroutine(currentLerpRoutine);
@@ -263,8 +281,10 @@ public class MenuController : MonoBehaviour
 
     public void helpButton()
     {
+        //Moves to help screen
         helpScreen.interactable = true;
         titleScreeen.interactable = false;
+        //End current lerp routine before starting new one
         if (currentLerpRoutine != null)
         {
             StopCoroutine(currentLerpRoutine);
@@ -285,6 +305,7 @@ public class MenuController : MonoBehaviour
 
     public void changeWorldSize(int size)
     {
+        //Select new world size and update world parameters
         switch (size)
         {
             case 0:
@@ -316,6 +337,7 @@ public class MenuController : MonoBehaviour
 
     public void play()
     {
+        //callback after fading screen
         void playCallBack()
         {
             titleScreeen.gameObject.SetActive(false);
@@ -339,17 +361,20 @@ public class MenuController : MonoBehaviour
             game.startGame();
 
             StartCoroutine(screenFader(1, 0, fadeTime, delay: 1.0f));
+            //Change music
             audioSource.clip = playMusic;
             audioSource.Play();
             StartCoroutine(musicFader(0, musicVolume, musicFadeTime));
         }
 
+        //Fade screen
         StartCoroutine(screenFader(0, 1, fadeTime, playCallBack));
         StartCoroutine(musicFader(musicVolume, 0, musicFadeTime));
     }
 
     private void setNewMapParameters()
     {
+        //Cleans world before giving new parameters
         mMap.CleanUpWorld();
 
         mMap.initialSize = new Vector2Int(selectedLevelSize.x, selectedLevelSize.y);
@@ -364,6 +389,7 @@ public class MenuController : MonoBehaviour
 
     public void previewMap()
     {
+        //create new preview image
         setNewMapParameters();
         game.Generate();
     }
@@ -371,6 +397,7 @@ public class MenuController : MonoBehaviour
     //In game HUD methods
     public void startPlaced()
     {
+        //Replace starting ui items with build ui items
         startPointSelect.GetComponentInChildren<Button>().interactable = false;
 
         StartCoroutine(lerpMenuItem(toolSelector, toolsOffPosition, toolsOnPosition, hudMoveTime));
@@ -381,6 +408,8 @@ public class MenuController : MonoBehaviour
 
     public void startWave(bool earlyStart)
     {
+        //Begin new wave
+        //Move build ui items away and wave ui items in
         nextWaveButton.GetComponent<Button>().interactable = false;
         toolSelector.GetComponent<CanvasGroup>().interactable = false;
         doubleSpeedToggle.interactable = true;
@@ -389,6 +418,7 @@ public class MenuController : MonoBehaviour
         StartCoroutine(lerpMenuItem(toolSelector, toolsOnPosition, toolsOffPosition, hudMoveTime));
         StartCoroutine(lerpMenuItem(doubleSpeedButton, nextWaveOffPosition, nextWaveOnPosition, hudMoveTime));
 
+        //Change to wave music
         void musicChangeCallback()
         {
             audioSource.clip = waveMusic;
@@ -396,6 +426,7 @@ public class MenuController : MonoBehaviour
             StartCoroutine(musicFader(0, musicVolume, musicFadeTime));
         }
         StartCoroutine(musicFader(musicVolume, 0, musicFadeTime, callBack: musicChangeCallback));
+        //Create wave start sound
         Destroy(Instantiate(waveStartSound, transform), 10.0f);
 
         game.startWave(earlyStart);
@@ -403,6 +434,8 @@ public class MenuController : MonoBehaviour
 
     public void endWave()
     {
+        //End wave
+        //Move wave ui items away and bring build ui items back in
         nextWaveButton.GetComponent<Button>().interactable = true;
         toolSelector.GetComponent<CanvasGroup>().interactable = true;
         doubleSpeedToggle.interactable = false;
@@ -414,6 +447,7 @@ public class MenuController : MonoBehaviour
         isDoubleSpeed = false;
         doubleSpeedToggle.isOn = false;
 
+        //change music to build music
         void musicChangeCallback()
         {
             audioSource.clip = playMusic;
@@ -427,6 +461,7 @@ public class MenuController : MonoBehaviour
 
     public void doubleSpeed(bool isDouble)
     {
+        //toggles double speed
         isDoubleSpeed = isDouble;
         if(isDouble)
         {
@@ -459,6 +494,7 @@ public class MenuController : MonoBehaviour
 
     public void quitToMenu()
     {
+        //End game and bring title screen up
         void endCallBack()
         {
             //Game starts after screen fades out
@@ -482,6 +518,7 @@ public class MenuController : MonoBehaviour
 
     public void gameOver()
     {
+        //Show game over menu
         gameOverCanvas.SetActive(true);
         doubleSpeed(false);
         StartCoroutine(lerpMenuItem(gameOverScreen, gameOverOffPosition, gameOverOnPosition, hudMoveTime, gameOverDelay));

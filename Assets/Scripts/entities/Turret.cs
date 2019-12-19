@@ -4,13 +4,17 @@ using UnityEngine;
 
 public abstract class Turret : MonoBehaviour
 {
+    //Abstract class for turret
+    //Provides methods to target enemies and decide when to shoot
+
     [SerializeField] private float shootDelay;
-    [SerializeField] private float retargetDelay;
+    [SerializeField] private float retargetDelay; //Delay before trying to find a new target to improve performance
     private float timeSinceLastShot = 0;
 
     private List<Spawner> spawners;
     private Game game;
 
+    //Replacement tile when upgraded
     public EnvironmentTile turretUpgrade;
     public int upgradeCost;
 
@@ -59,6 +63,7 @@ public abstract class Turret : MonoBehaviour
 
     private IEnumerator getTarget()
     {
+        //Continuously try to find a new target
         while(true)
         {
             float closestPathLength = float.MaxValue;
@@ -67,6 +72,7 @@ public abstract class Turret : MonoBehaviour
             {
                 foreach (Enemy enemy in spawner.activeEnemies)
                 {
+                    //Choose enemy that is closest to the base and in range
                     if (enemy.pathLength < closestPathLength && isInRange(enemy))
                     {
                         targetEnemy = enemy;
@@ -80,11 +86,15 @@ public abstract class Turret : MonoBehaviour
         }     
     }
 
+    //Check if enemy is in range of turret
     protected abstract bool isInRange(Enemy enemy);
 
+    //Aim gun towards enemy
     protected abstract void aimTowardsTarget();
 
+    //Check if ready to shoot
     protected abstract bool readyToShoot();
 
+    //Create a shot
     protected abstract void shoot();
 }

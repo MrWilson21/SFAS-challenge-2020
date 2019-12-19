@@ -7,6 +7,8 @@ using TMPro;
 
 public class Game : MonoBehaviour
 {
+    //Controls the flow of the game and takes player inputs
+
     [SerializeField] private Camera MainCamera;
     private CameraController cameraController;
     [SerializeField] private int numberOfEnemySpawners;
@@ -105,6 +107,7 @@ public class Game : MonoBehaviour
 
     void Start()
     {
+        //Set inital variables up
         mRaycastHits = new RaycastHit[NumberOfRaycastHits];
         mMap = GetComponentInChildren<Environment>();
         menu = GetComponent<MenuController>();
@@ -117,6 +120,7 @@ public class Game : MonoBehaviour
 
     private void Update()
     {
+        //If game is being played
         if (playingGame)
         {
             doGameUpdate();
@@ -125,19 +129,25 @@ public class Game : MonoBehaviour
 
     private void doGameUpdate()
     {
+        //If a tile was selected in the last frame then restore its colour
         if (currentTile != null && currentTile.canBeDestroyed && !currentTile.IsAccessible)
         {
             currentTile.GetComponent<ColorSwapper>().restoreColour();
         }
+        //If a turret was selected in the last frame then hide its range
         if(currentTurret != null)
         {
             showRange(currentTurret, false);
         }
+        //Get the current tile that the mouse is hovering over
         tileIsHighlighted = getMouseTile();
 
+        //If the place tool is being used
         if(objectToPlace != null)
         {
+            //disable the object
             objectToPlace.SetActive(false);
+            //Rotate the object if rotate key pressed
             if (Input.GetKeyDown(KeyCode.R))
             {
                 tileRotation = (tileRotation + 1) % 4;
@@ -145,15 +155,18 @@ public class Game : MonoBehaviour
             }
         }
 
+        //Disable mouse icons
         buyPrice.gameObject.SetActive(false);
         destroyIcon.gameObject.SetActive(false);
         rotateIcon.gameObject.SetActive(false);
         upgradeIcon.gameObject.SetActive(false);
 
+        //If mouse is hovering over a tile
         if (tileIsHighlighted)
         {
             currentTurret = currentTile.GetComponent<Turret>();
 
+            //If place tool is being used
             if (isUsingPlaceTool)
             {
                 if (!startPlaced)
@@ -165,15 +178,18 @@ public class Game : MonoBehaviour
                     usePlaceTool();
                 }
             }
+            //If destroy tool is being used
             else if (isUsingDestroyTool)
             {
                 useDestroyTool();
             }
+            //If a turret is highlighted show its range
             else if (currentTurret != null)
             {
                 showRange(currentTurret, true);
             }
 
+            //If upgrade tool is being used
             if (isUsingUpgradeTool)
             {
                 useUpgradeTool();
@@ -187,6 +203,7 @@ public class Game : MonoBehaviour
 
         if(!isDoingWave && startPlaced)
         {
+            //Start wave when timer reaches 0
             timeUntilWave -= Time.deltaTime;
             if (timeUntilWave <= 0)
             {
@@ -194,6 +211,7 @@ public class Game : MonoBehaviour
             }
             else
             {
+                //Update timer text
                 nextWaveCountdown.text = "Next wave in " + (int)timeUntilWave;
                 nextWaveBonus.text = "<< Start now for bonus $" + calculateNextWaveBonus();
             }
@@ -202,6 +220,7 @@ public class Game : MonoBehaviour
 
     private int calculateNextWaveBonus()
     {
+        //Get bonus for starting a round early
         float money = Mathf.Log(Mathf.Clamp(timeUntilWave, 1, float.MaxValue));
         money *= moneyFromEnemiesCurve.Evaluate(waveCount) * nextWaveBonusMultiplier;
         return (int)money;
@@ -209,6 +228,7 @@ public class Game : MonoBehaviour
 
     private void updateMoney(int moneyToAdd)
     {
+        //Increment money and update money text
         money += moneyToAdd;
         moneyText.text = "$" + money;
         Message message = Instantiate(messagePrefab, hudCanvas);
@@ -218,10 +238,12 @@ public class Game : MonoBehaviour
 
     private void setHealth(int health)
     {
+        //Decrement health and update health slider 
         this.health = health;
         healthSlider.value = health;
         healthText.text = health.ToString() + " / " + startingHealth.ToString();
 
+        //Change colour based on health
         healthFill.color = healthGradient.Evaluate((float)health / (float)startingHealth);
         healthIcon.color = healthGradient.Evaluate((float)health / (float)startingHealth);
         healthText.color = healthGradient.Evaluate((float)health / (float)startingHealth);
@@ -229,6 +251,7 @@ public class Game : MonoBehaviour
 
     private void setBuyText(int cost)
     {
+        //Set the text over the mouse position with the amount of money to buy/sell an object
         Vector3 pos = MainCamera.ScreenToViewportPoint(Input.mousePosition);
         pos.x = (pos.x - 0.5f) * hudCanvas.sizeDelta.x;
         pos.y = (pos.y - 0.5f) * hudCanvas.sizeDelta.y;
@@ -236,6 +259,7 @@ public class Game : MonoBehaviour
 
         buyPriceText.text = (Mathf.Sign(cost) == 0 ? "" : "-") +  "$" + Mathf.Abs(cost).ToString();
 
+        //set the colour depending on buying or selling
         buyPrice.gameObject.SetActive(true);
         if(cost > 0)
         {
@@ -255,6 +279,7 @@ public class Game : MonoBehaviour
 
     private void sendMessage(string text, Color? colour = null)
     {
+        //Creating a piecing of text at the mouse position that fades out gradually
         Message message = Instantiate(messagePrefab, hudCanvas);
         Vector3 pos = MainCamera.ScreenToViewportPoint(Input.mousePosition);
         pos.x = (pos.x - 0.5f) * hudCanvas.sizeDelta.x;
@@ -272,34 +297,46 @@ public class Game : MonoBehaviour
 
     private void usePlaceTool()
     {
+        //Place a turret down on the selected tile if possible
+
+        //Show rotate icon
         Vector3 pos = MainCamera.ScreenToViewportPoint(Input.mousePosition);
         pos.x = (pos.x - 0.5f) * hudCanvas.sizeDelta.x;
         pos.y = (pos.y - 0.5f) * hudCanvas.sizeDelta.y;
         rotateIcon.localPosition = pos;
         rotateIcon.gameObject.SetActive(true);
 
+        //Enable the turret preview object
         objectToPlace.SetActive(true);
         objectToPlace.transform.position = currentTile.Position;
+        //Check if the tile is accessible
         if (currentTile.IsAccessible && currentTile.canBeDestroyed)
         {
+            //set preview object to green if it is valid
             objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.green);
             Turret turret = tilePrefab.GetComponentInChildren<Turret>();
             int turretCost = 0;
+            //Set the cost of the turret
             if (turret != null)
             {
                 turretCost = getTurretCost(tilePrefab);
                 setBuyText(turretCost);
             }
 
+            //If left click pressed
             if (Input.GetMouseButtonDown(0))
             {
+                //If player can afford it
                 if(turretCost <= money)
                 {
+                    //Swap tile for turret
                     currentTile = mMap.swapTile(currentTile, tilePrefab, true, false);
                     currentTile.transform.GetChild(0).transform.Rotate(new Vector3(0, 1, 0), 90 * tileRotation);
 
+                    //Check if tile position is valid
                     if (mMap.checkIfHouseAccesible())
                     {
+                        //If position is valid then set the turret up and recalculate enemy routes
                         turret = currentTile.GetComponentInChildren<Turret>();
 
                         if (turret != null)
@@ -321,39 +358,50 @@ public class Game : MonoBehaviour
                     }
                     else
                     {
+                        //If position isn't valid then reset the tile
                         sendMessage("Can't block path");
                         mMap.clearTile(currentTile);
                     }
                 }
                 else
                 {
+                    //If player can't afford then send error message
                     sendMessage("Can't afford");
                 }                  
             }
         }
         else
         {
+            //Set preview object to red if not a valid position
             objectToPlace.GetComponent<ColorSwapper>().swapColour(Color.red);
         }
     }
 
     private void useDestroyTool()
     {
+        //Remove a turret or obstacle when player clicks on it
+
+        //Enable destroy icon
         Vector3 pos = MainCamera.ScreenToViewportPoint(Input.mousePosition);
         pos.x = (pos.x - 0.5f) * hudCanvas.sizeDelta.x;
         pos.y = (pos.y - 0.5f) * hudCanvas.sizeDelta.y;
         destroyIcon.localPosition = pos;
         destroyIcon.gameObject.SetActive(true);
 
+        //Check if highlighted tile can be cleared
         if (currentTile.canBeDestroyed && !currentTile.IsAccessible)
         {
+            //Get cost to remove tile and colour it red
             int cost = getTileClearCost(currentTile);
             setBuyText(cost);
             currentTile.GetComponent<ColorSwapper>().swapColour(Color.red);
+            //If left click pressed
             if (Input.GetMouseButtonDown(0))
             {
+                //Check if player can afford it
                 if(cost <= money)
-                {                    
+                {              
+                    //If player can afford it then update player money and clear the tile
                     buyItem(cost);
                     mMap.clearTile(currentTile);
 
@@ -365,6 +413,7 @@ public class Game : MonoBehaviour
                         turrets.Remove(turret);
                     }
 
+                    //Re calculate enemy route
                     foreach (Spawner spawner in spawners)
                     {
                         spawner.route = mMap.Solve(spawner.spawnExitPoint, mMap.houseEntrance);
@@ -380,25 +429,34 @@ public class Game : MonoBehaviour
 
     private void useUpgradeTool()
     {
+        //Upgrade a turret when the player clicks on it
+
+        //Enable upgrade icon
         Vector3 pos = MainCamera.ScreenToViewportPoint(Input.mousePosition);
         pos.x = (pos.x - 0.5f) * hudCanvas.sizeDelta.x;
         pos.y = (pos.y - 0.5f) * hudCanvas.sizeDelta.y;
         upgradeIcon.localPosition = pos;
         upgradeIcon.gameObject.SetActive(true);
 
+        //Get the turret on the highlighted tile
         Turret turret = currentTile.GetComponent<Turret>();
 
         if(turret != null)
         {
+            //Check if turret can be upgraded
             if(turret.turretUpgrade != null)
             {
+                //Highlight green and get cost
                 currentTile.GetComponent<ColorSwapper>().swapColour(Color.green);
                 int cost = turret.upgradeCost;
                 setBuyText(cost);
+                //If left mouse button clicked
                 if (Input.GetMouseButtonDown(0))
                 {
+                    //If player can afford it
                     if (cost <= money)
                     {
+                        //Update money and replace turret with new one
                         buyItem(cost);
                         turrets.Remove(turret);
                         currentTile = mMap.swapTile(currentTile, turret.turretUpgrade, true, false);
@@ -417,6 +475,7 @@ public class Game : MonoBehaviour
             }
             else if (Input.GetMouseButtonDown(0))
             {
+                //Send message if turret already max level
                 sendMessage("Max level");
             }
         }
@@ -424,18 +483,24 @@ public class Game : MonoBehaviour
 
     private void placeStartPoint()
     {
+        //Place the starting base
+
+        //Enable rotate icon
         Vector3 pos = MainCamera.ScreenToViewportPoint(Input.mousePosition);
         pos.x = (pos.x - 0.5f) * hudCanvas.sizeDelta.x;
         pos.y = (pos.y - 0.5f) * hudCanvas.sizeDelta.y;
         rotateIcon.localPosition = pos;
         rotateIcon.gameObject.SetActive(true);
 
+
         objectToPlace.SetActive(true);
         objectToPlace.transform.position = currentTile.Position;
+        //Check if the tile is accessible
         if (currentTile.IsAccessible && currentTile.canBeDestroyed)
         {
             if (Input.GetMouseButtonDown(0))
             {
+                //Get the coordinate of the tile outside of the front door of the base
                 Vector2Int houseEntranceCoord = currentTile.coordinates;
 
                 switch (tileRotation)
@@ -458,8 +523,10 @@ public class Game : MonoBehaviour
                 mMap.houseEntrance.canBeDestroyed = false;
                 currentTile = mMap.swapTile(currentTile, tilePrefab, false, false);
                 currentTile.transform.GetChild(0).transform.Rotate(new Vector3(0, 1, 0), 90 * tileRotation);
+                //Check if base entrance is accessible
                 if (mMap.checkIfHouseAccesible())
                 {
+                    //If accessible then set up spawner routes and change ui layout
                     cancelTool();
                     startPlaced = true;
 
@@ -476,7 +543,9 @@ public class Game : MonoBehaviour
                 }
                 else
                 {
+                    //If not then clear tile
                     sendMessage("Can't place here");
+                    mMap.houseEntrance.canBeDestroyed = true;
                     mMap.clearTile(currentTile);
                 }
             }
@@ -490,6 +559,9 @@ public class Game : MonoBehaviour
 
     private int getTileClearCost(EnvironmentTile tile)
     {
+        //Get the cost to remove the tile or the sell price of the turret if tile is a turret
+
+        //Decrement turret cost of the tile to get the price that was paid for it
         incrementTurretCost(tile, -1);
         Turret turret = tile.GetComponentInChildren<Turret>();
         int cost;
@@ -505,12 +577,15 @@ public class Game : MonoBehaviour
         {
             cost = tile.costToRemove;
         }
+        //Increment cost again to ensure turret cost stays the same
         incrementTurretCost(tile, 1);
         return cost;
     }
 
     private int getTurretCost(EnvironmentTile tile)
     {
+        //get the cost to build a turret
+
         Turret turret = tile.GetComponentInChildren<Turret>();
         if (turret is MachineGun)
         {
@@ -526,6 +601,8 @@ public class Game : MonoBehaviour
 
     private void incrementTurretCost(EnvironmentTile tile, int increment)
     {
+        //Increase or decrease cost of turrets by increment
+
         Turret turret = tile.GetComponentInChildren<Turret>();
         if(turret != null)
         {
@@ -564,6 +641,7 @@ public class Game : MonoBehaviour
 
     public void cancelTool()
     {
+        //Deselect all tools
         isUsingPlaceTool = false;
         isUsingDestroyTool = false;
         isUsingUpgradeTool = false;
@@ -572,6 +650,7 @@ public class Game : MonoBehaviour
 
     public void destroyTool()
     {
+        //Select destroy tool
         isUsingPlaceTool = false;
         isUsingDestroyTool = true;
         isUsingUpgradeTool = false;
@@ -580,6 +659,7 @@ public class Game : MonoBehaviour
 
     public void upgradeTool()
     {
+        //Select upgrade tool
         isUsingPlaceTool = false;
         isUsingDestroyTool = false;
         isUsingUpgradeTool = true;
@@ -588,6 +668,7 @@ public class Game : MonoBehaviour
 
     private void showRange(Turret turret, bool show)
     {
+        //Show the range circle of a turret
         if(show)
         {
             foreach (RangeCircle range in turret.GetComponentsInChildren<RangeCircle>())
@@ -606,6 +687,7 @@ public class Game : MonoBehaviour
 
     public void selectNewTile(int tileIndex)
     {
+        //Select the place tool and an object to place
         isUsingDestroyTool = false;
         isUsingUpgradeTool = false;
         isUsingPlaceTool = true;
@@ -624,6 +706,7 @@ public class Game : MonoBehaviour
 
     public void startWave(bool earlyStart)
     {
+        //Start a new wave
         waveNumber.text = "Wave " + waveCount;
         waveSpawner.makeWave(waveCount);
         enemyCount = waveSpawner.totalNumberOfEnemies;
@@ -640,12 +723,14 @@ public class Game : MonoBehaviour
 
     private void endWave()
     {
+        //End the current wave
         waveCount++;
         isDoingWave = false;
     }
 
     private void loseGame()
     {
+        //Bring up the game over screen and update enemy animations
         cancelTool();
         gameOver = true;
         menu.gameOver();
@@ -663,6 +748,7 @@ public class Game : MonoBehaviour
 
     public void enemyReachesEnd()
     {
+        //Decrement health and check if game is lost or wave is over
         updateEnemyCount(1);
         setHealth(health - 1);
         if(health == 0)
@@ -678,6 +764,7 @@ public class Game : MonoBehaviour
 
     public void enemyDie(float moneyMultiplier)
     {
+        //Reward player with money and check if wave is finished
         updateMoney((int)(moneyFromEnemiesCurve.Evaluate(waveCount) * moneyMultiplier));
         updateEnemyCount(1);
         if (enemyCount == 0)
@@ -720,11 +807,13 @@ public class Game : MonoBehaviour
         mortarCostText.text = "$" + mortarCost.ToString();
         turrets = new List<Turret>();
 
+        //Create new world
         Generate();
     }
 
     public void Generate()
     {
+        //Generate new world and place spawners
         mMap.CleanUpWorld();
         mMap.GenerateWorld();
         spawners = mMap.placeSpawners(numberOfEnemySpawners);

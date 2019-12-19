@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class CanvasResize : MonoBehaviour
 {
+    //basic resize script to make ui scale better with different aspect ratios
+
     [SerializeField] private List<RectTransform> canvases;
 
     [SerializeField] private float targetWidth;
@@ -12,9 +14,9 @@ public class CanvasResize : MonoBehaviour
     float targetRatio;
     float oldRatio;
 
-    // Start is called before the first frame update
     void Start()
     {
+        //set target ratio
         targetRatio = targetWidth / targetHeight;
         oldRatio = Screen.width / Screen.height;
     }
@@ -26,6 +28,7 @@ public class CanvasResize : MonoBehaviour
         float height = Screen.height;
         float currentRatio = width / height;
 
+        //adjust canvas width and height depending on current aspect ratio
         if(currentRatio != oldRatio)
         {
             width = targetWidth * (currentRatio / targetRatio);

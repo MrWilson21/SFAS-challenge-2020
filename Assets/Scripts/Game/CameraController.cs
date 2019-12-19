@@ -19,7 +19,7 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float zoomDecelerationStatic;
     [SerializeField] private float startZoomLevel;
 
-    [SerializeField] private float rotationControlRatio; //Ratio of how much controll the mouse has over the x rotation angle of camera
+    [SerializeField] private float rotationControlRatio; //Ratio of how much control the mouse has over the x rotation angle of camera
 
     [SerializeField] private AnimationCurve xAngleCurve; //To determine the x angle depending on zoom level
     [SerializeField] private AnimationCurve heightCurve; //To determine the height of the camera depending on zoom level;
@@ -30,7 +30,7 @@ public class CameraController : MonoBehaviour
     private float zoomAcceleration;
     private float zoomSpeed;
 
-    private float xSpinLevel;
+    private float xSpinLevel; //X angle of rotation
     private float xSpinAcceleration;
     private float xSpinSpeed;
 
@@ -90,6 +90,7 @@ public class CameraController : MonoBehaviour
             xSpinLevel = Mathf.Clamp(xSpinLevel, 0, 1);
         }
 
+        //X rotation determined by zoom level and the spin level so zooming will slightly affect the camera angle 
         float xAngle = xAngleCurve.Evaluate(xSpinLevel * rotationControlRatio + zoomLevel * (1 - rotationControlRatio));
 
         transform.eulerAngles = new Vector3(xAngle, yAngle);
@@ -153,6 +154,7 @@ public class CameraController : MonoBehaviour
 
     public void startGame()
     {
+        //move camera to starting position and enable movement
         isPLaying = true;
         zoomLevel = startZoomLevel;
         xSpinLevel = startZoomLevel;
@@ -161,11 +163,13 @@ public class CameraController : MonoBehaviour
 
     public void loseGame()
     {
+        //Disable movement
         isPLaying = false;
     }
 
     public void endGame()
     {
+        //Disable movement and move to title screen position
         isPLaying = false;
         resetPosition(cameraStart);
     }

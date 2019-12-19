@@ -5,10 +5,12 @@ using UnityEngine;
 [RequireComponent(typeof(LineRenderer))]
 public class RangeCircle : MonoBehaviour
 {
+    //Circle drawn to show shooting range of turrets
+
     [SerializeField]
     private int segments = 50;
     [SerializeField]
-    public float radius = 5;
+    public float radius = 5; //Turret range
     LineRenderer line;
 
     private void Awake()
@@ -38,6 +40,7 @@ public class RangeCircle : MonoBehaviour
 
     void CreatePoints()
     {
+        //Create points in a circle
         float x;
         float y;
         float z;

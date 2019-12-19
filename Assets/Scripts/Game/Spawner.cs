@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class Spawner : MonoBehaviour
 {
+    //Creates waves of enemies and gives them paths to follow
+
     private Game game;
 
     //Position enemies start at
@@ -15,8 +17,10 @@ public class Spawner : MonoBehaviour
     //Final tile for enemies to walk to to reach house
     public EnvironmentTile housePoint { get; set; }
 
-    public List<Enemy> activeEnemies;
+    //Currently alive enemies 
+    public List<Enemy> activeEnemies; 
 
+    //Current wave to spawn
     private List<Enemy> wave;
     private float enemyHealthMultiplier;
     public float spawnDelay { get; set; }
@@ -28,6 +32,7 @@ public class Spawner : MonoBehaviour
 
     public void setWave(List<Enemy> wave, float healthMultiplier, float spawnDelay)
     {
+        //Gets wave of enemies to start spawning
         StopAllCoroutines();
         this.wave = wave;
         this.spawnDelay = spawnDelay;
@@ -38,6 +43,7 @@ public class Spawner : MonoBehaviour
 
     private IEnumerator doWave()
     {
+        //Spawns enemies with a set delay until none left to spawn
         while (wave.Count > 0)
         {
             spawnEnemy();
@@ -48,6 +54,7 @@ public class Spawner : MonoBehaviour
 
     private void spawnEnemy()
     {
+        //Create enemy and set its health and path to follow
         Enemy e = Instantiate(wave[wave.Count - 1], spawnPoint.Position, Quaternion.identity, transform);
         activeEnemies.Add(e);
 
