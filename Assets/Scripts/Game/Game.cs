@@ -111,6 +111,8 @@ public class Game : MonoBehaviour
         waveSpawner = GetComponent<WaveSpawner>();
         cameraController = MainCamera.GetComponent<CameraController>();
         mMap.costToRemoveObstacles = costToRemoveObstacles;
+        QualitySettings.vSyncCount = 0;
+        Application.targetFrameRate = 120;
     }
 
     private void Update()

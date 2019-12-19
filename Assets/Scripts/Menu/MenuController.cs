@@ -246,7 +246,7 @@ public class MenuController : MonoBehaviour
 
     public void exitGame()
     {
-        print("exit");
+        Application.Quit();
     }
 
     public void playButton()
