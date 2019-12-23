@@ -511,7 +511,8 @@ public class MenuController : MonoBehaviour
             audioSource.clip = menuMusic;
             audioSource.Play();
             StartCoroutine(musicFader(0, musicVolume, musicFadeTime));
-        }       
+        }
+        doubleSpeed(false);
         StartCoroutine(screenFader(0, 1, fadeTime, endCallBack));
         StartCoroutine(musicFader(musicVolume, 0, musicFadeTime));
     }

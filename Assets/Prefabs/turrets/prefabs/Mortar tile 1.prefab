@@ -34,7 +34,7 @@ Transform:
   m_LocalPosition: {x: 7.7399883, y: 98.461624, z: -392.28336}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 337110663282351827}
+  - {fileID: 341384393916657925}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -142,14 +142,14 @@ MonoBehaviour:
     type: 3}
   upgradeCost: 22500
   shootSound: {fileID: 8300000, guid: a764377339b869e459f5e53fb9258f73, type: 3}
-  gunBarrel: {fileID: 340360255185994283}
+  gunBarrel: {fileID: 341384393916657684}
   maxRange: 50
   minRange: 20
-  rotationSpeed: 70
+  rotationSpeed: 90
   shellVelocity: 25
   mortarShell: {fileID: -3190986673066170210, guid: 3db13a14a05e117478e8705fc4fb0a40,
     type: 3}
-  shellDamage: 80
+  shellDamage: 65
 --- !u!82 &-7975138014803356341
 AudioSource:
   m_ObjectHideFlags: 0
@@ -313,13 +313,13 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 23b487e64ed9bb84c9cc624caa04271f, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4af3966dba2cd746ab019083640eb8c, type: 3}
---- !u!4 &337110663282351827 stripped
+--- !u!4 &341384393916657925 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4924783946067484, guid: d4af3966dba2cd746ab019083640eb8c,
     type: 3}
   m_PrefabInstance: {fileID: 341384393916657871}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &340360255185994283 stripped
+--- !u!1 &341384393916657684 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1658705116820196, guid: d4af3966dba2cd746ab019083640eb8c,
     type: 3}

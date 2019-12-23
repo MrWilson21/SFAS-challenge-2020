@@ -34,7 +34,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 2595698548214505097}
+  - {fileID: 1863975211915044170}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -141,12 +141,12 @@ MonoBehaviour:
   turretUpgrade: {fileID: 0}
   upgradeCost: 0
   shootSound: {fileID: 8300000, guid: 34b439bf70b80a6409eadecc6be92d68, type: 3}
-  gunBarrel: {fileID: 2598787399303954841}
+  gunBarrel: {fileID: 1863975211915044392}
   range: 30
-  rotationSpeed: 150
+  rotationSpeed: 160
   enemyHeight: 1.5
   bullet: {fileID: 9177913578465112841, guid: 12ea0a574b594264685afffd52fff036, type: 3}
-  bulletDamage: 50
+  bulletDamage: 60
 --- !u!82 &-7355649107596342775
 AudioSource:
   m_ObjectHideFlags: 0
@@ -357,13 +357,13 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7625159eaf860d64da336869090343a9, type: 3}
---- !u!4 &2595698548214505097 stripped
+--- !u!4 &1863975211915044170 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4457417424283040254, guid: 7625159eaf860d64da336869090343a9,
     type: 3}
   m_PrefabInstance: {fileID: 1863975211915044727}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &2598787399303954841 stripped
+--- !u!1 &1863975211915044392 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4453660680009180910, guid: 7625159eaf860d64da336869090343a9,
     type: 3}

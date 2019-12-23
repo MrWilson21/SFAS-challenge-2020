@@ -33,7 +33,7 @@ public class WaveSpawner : MonoBehaviour
     {
         //Make new wave depending on wave number
         //new spawner is added every 5 rounds up to the maximum
-        numberOfActiveSpawners = Mathf.Clamp(waveCount / 5, 1, maxNumberOfSpawners);
+        numberOfActiveSpawners = Mathf.Clamp((waveCount / 5) + 1, 1, maxNumberOfSpawners);
 
         //Amount of each enemy to spawn
         enemyCount = new List<int>();

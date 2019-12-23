@@ -106,7 +106,6 @@ public class Enemy : MonoBehaviour
     {
         //Set animation to death animation and stop moving
         spawner.activeEnemies.Remove(this);
-        game.enemyDie(rewardMultiplier);
         animator.SetBool("isDead", true);
         healthBar.hide();
         isDead = true;
@@ -126,6 +125,7 @@ public class Enemy : MonoBehaviour
         if(!isDead)
         {
             game.enemyReachesEnd();
+            die();
         }      
     }
 
@@ -142,6 +142,7 @@ public class Enemy : MonoBehaviour
             if (hp <= 0)
             {
                 die();
+                game.enemyDie(rewardMultiplier);
             }
         }    
     }

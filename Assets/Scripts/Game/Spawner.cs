@@ -41,6 +41,12 @@ public class Spawner : MonoBehaviour
         StartCoroutine(doWave());
     }
 
+    public void endWave()
+    {
+        StopAllCoroutines();
+    }
+
+
     private IEnumerator doWave()
     {
         //Spawns enemies with a set delay until none left to spawn

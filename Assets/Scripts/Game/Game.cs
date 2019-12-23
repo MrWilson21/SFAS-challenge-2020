@@ -331,6 +331,7 @@ public class Game : MonoBehaviour
                 {
                     //Swap tile for turret
                     currentTile = mMap.swapTile(currentTile, tilePrefab, true, false);
+                    currentTile.costToRemove = 0;
                     currentTile.transform.GetChild(0).transform.Rotate(new Vector3(0, 1, 0), 90 * tileRotation);
 
                     //Check if tile position is valid
@@ -459,7 +460,10 @@ public class Game : MonoBehaviour
                         //Update money and replace turret with new one
                         buyItem(cost);
                         turrets.Remove(turret);
+                        int oldCost = currentTile.costToRemove;
                         currentTile = mMap.swapTile(currentTile, turret.turretUpgrade, true, false);
+                        //Add upgrade costs together so sell price can be calculated
+                        currentTile.costToRemove = oldCost + cost;
 
                         turret = currentTile.GetComponent<Turret>();
                         turret.setSpawners(spawners);
@@ -567,11 +571,11 @@ public class Game : MonoBehaviour
         int cost;
         if (turret is MachineGun)
         {
-            cost = (int)(-machineGunCost * sellMoneyBackPercent);
+            cost = (int)(-(machineGunCost + tile.costToRemove) * sellMoneyBackPercent);
         }
         else if (turret is Mortar)
         {
-            cost = (int)(-mortarCost * sellMoneyBackPercent);
+            cost = (int)(-(mortarCost + tile.costToRemove) * sellMoneyBackPercent);
         }
         else
         {
@@ -739,6 +743,7 @@ public class Game : MonoBehaviour
 
         foreach (Spawner spawner in spawners)
         {
+            spawner.endWave();
             foreach (Enemy enemy in spawner.activeEnemies)
             {
                 enemy.winGame();

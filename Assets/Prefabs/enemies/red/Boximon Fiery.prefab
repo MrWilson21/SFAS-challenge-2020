@@ -1069,7 +1069,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SingleNodeMoveTime: 0.7
-  baseHp: 60
+  baseHp: 55
   rewardMultiplier: 1.5
 --- !u!136 &8111156018522963571
 CapsuleCollider:
